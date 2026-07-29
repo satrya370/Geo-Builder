@@ -1,5 +1,6 @@
-# Local credentials and secrets
+# Local credentials and secrets — simpan file ini di Drive/flashdisk, jangan commit
 Credential_information.md
+CREDENTIAL_SETUP.md
 ai_docs/001_verifikasi-medium-token_log.md
 ai_docs/004_researcher-outline-writer_report.md
 ai_docs/016_citation-quote-verification_log.md

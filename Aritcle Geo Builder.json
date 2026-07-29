@@ -1,0 +1,2200 @@
+{
+  "updatedAt": "2026-07-28T23:18:42.398Z",
+  "createdAt": "2026-07-26T00:25:56.915Z",
+  "id": "rwIbdIkIhoVE8nkG",
+  "name": "Aritcle Geo Builder",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Manual Article Run",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Topic",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Topic Detail",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Target Keyword"
+            },
+            {
+              "fieldLabel": "Language",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Indonesia"
+                  },
+                  {
+                    "option": "English"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Research Mode",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Auto"
+                  },
+                  {
+                    "option": "Concept Only"
+                  },
+                  {
+                    "option": "Force Research"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Category Hint",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Auto"
+                  },
+                  {
+                    "option": "Classical & Modern Philosophy"
+                  },
+                  {
+                    "option": "Philosophy of Science"
+                  },
+                  {
+                    "option": "Psychological Opinion & Perspective"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Key Entities",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "FAQ Seed",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Word Count Target",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Auto"
+                  },
+                  {
+                    "option": "1500"
+                  },
+                  {
+                    "option": "2000"
+                  },
+                  {
+                    "option": "2500"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Related Article URL"
+            },
+            {
+              "fieldLabel": "Run Mode",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Live Run - Draft"
+                  },
+                  {
+                    "option": "Live Run - Publish"
+                  },
+                  {
+                    "option": "Test"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n1",
+      "name": "Form Trigger - Manual Run",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        400
+      ],
+      "webhookId": "0b2bcd55-ef53-443d-84f2-45409188a2f6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const f = $input.first().json;\nconst id = require('crypto').randomUUID();\nconst val = (...keys) => {\n  for (const key of keys) if (f[key] !== undefined) return f[key];\n  return '';\n};\nconst trim = (v) => { const s = String(v || '').trim(); return s || null; };\nconst dropAuto = (v) => { const s = String(v || '').trim(); return (s && s !== 'Auto') ? s : null; };\n\nreturn [{ json: {\n  runId: id,\n  runMode: 'form',\n  topic: String(val('topic', 'Topic')).trim(),\n  topicDetail: String(val('topic_detail', 'Topic Detail')).trim(),\n  targetKeyword: trim(val('target_keyword', 'Target Keyword')),\n  categoryHint: dropAuto(val('category_hint', 'Category Hint')),\n  keyEntitiesSeed: trim(val('key_entities', 'Key Entities')),\n  faqSeed: trim(val('faq_seed', 'FAQ Seed')),\n  wordCountTarget: dropAuto(val('word_count_target', 'Word Count Target')),\n  language: String(val('language', 'Language') || 'Indonesia').trim(),\n  researchMode: String(val('research_mode', 'Research Mode') || 'Auto').trim(),\n  publishMode: String(val('run_mode', 'Run Mode') || 'Live Run - Draft').trim(),\n  relatedArticleUrl: trim(val('related_article_url', 'Related Article URL')),\n  startedAt: new Date().toISOString()\n} }];"
+      },
+      "id": "n2",
+      "name": "Code: Set Form Run Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = `{\n  \"_comment\": \"Read by node 6 (Code: Load Content Context). Replace <...> placeholders with your actual site data. Categories & tags MUST be copied from your existing WordPress site (GET /wp-json/wp/v2/categories?per_page=100) so the AI selects from available ones, not inventing new categories.\",\n\n  \"site\": {\n    \"name\": \"satryapudja.wordpress.com\",\n    \"url\": \"https://satryapudja.wordpress.com\",\n    \"language\": \"id\",\n    \"niche\": \"Philosophy (classical & modern, including philosophy of science — naturalism, evolution, philosophy of creation) and niche psychological opinion/perspective (specific psychological phenomena, including tips for conditions like ADHD/anxiety) — NOT general self-help/self-improvement, NOT clinical information presentation\",\n    \"audience\": \"Curious, reflective readers — interested in deep philosophical perspectives and well-reasoned opinions on psychological phenomena, not seekers of generic self-help advice or clinical diagnoses\",\n    \"contentStyle\": \"Mostly OPINION/PERSPECTIVE (deep-dive argumentative), not neutral encyclopedic reporting — see tone.stance below and GEO_SCORING_RUBRIC.md §5a (adjusted in CP 002)\"\n  },\n\n  \"tone\": {\n    \"voice\": \"reflective, argumentative but measured — deep-dive, not shallow listicle\",\n    \"person\": \"second person (you) — not formal 'Anda', not circular 'we'\",\n    \"stance\": \"Taking an explicit stance/opinion is allowed and ENCOURAGED — BUT every stance MUST reference a specific thinker/theory/study (philosopher name, psychological theory name, study name), not thrown out without basis. See GEO_SCORING_RUBRIC.md §5a.\",\n    \"avoid\": [\n      \"hype/clickbait language (EVERYONE was WRONG, revolutionary, you MUST know this)\",\n      \"filler opening sentences (in this digital era, as time progresses)\",\n      \"vague attribution (many experts, according to research) — ALWAYS name the specific philosopher/theory/study\",\n      \"generic self-help/self-improvement style (5 ways to be better, generic productivity tips)\",\n      \"medical/clinical article style (diagnosis, treatment protocols) — this is not the niche, and the Safety Guard will reject topics requesting such personal advice\",\n      \"emoji within article body\"\n    ],\n    \"prefer\": [\n      \"explicit references to philosopher names/theories/schools of thought or specific psychological studies\",\n      \"comparison of perspectives (e.g., two philosophers with opposing views on the same issue)\",\n      \"mention trade-offs/limitations of arguments, not just one side\",\n      \"concise sentences that stand alone meaningfully when quoted individually\"\n    ]\n  },\n\n  \"author\": {\n    \"_comment\": \"Used for WordPress byline + JSON-LD author (E-E-A-T signal). Framing: independent writer/researcher synthesizing research & thought — NOT claiming to be a licensed clinical psychologist or formal philosophy academic, unless actually true. False credential claims risk damaging site credibility if checked by readers.\",\n    \"name\": \"Satrya Pudja\",\n    \"jobTitle\": \"Independent writer & researcher — philosophy and psychology\",\n    \"url\": \"https://satryapudja.wordpress.com/about\",\n    \"bio\": \"An independent writer critically exploring perspectives on meaning, existence, and the human condition through philosophy and psychology. Also shares a firsthand account of living with and recovering from ADHD and anxiety — informed by personal experience in therapy and a sustained self-study of the psychological frameworks behind these conditions.\",\n    \"credentials\": [],\n    \"sameAs\": [\n      \"https://github.com/satryapudja\",\n      \"https://linkedin.com/in/satryapudja\"\n    ],\n    \"wpAuthorId\": 1\n  },\n\n  \"wordpress\": {\n    \"_comment\": \"WordPress.com site (CP 001) — NOT self-hosted. Auth via OAuth2 generic credential in n8n (Authentication: Body), not Application Password/Basic Auth. categories & tags MUST be numeric IDs from your WP; fetch via GET {restApiBase}/categories and {restApiBase}/tags, don't let the AI make up new category names.\",\n    \"site\": \"satryapudja.wordpress.com\",\n    \"restApiBase\": \"https://public-api.wordpress.com/rest/v1.1/sites/satryapudja.wordpress.com\",\n    \"authMethod\": \"oauth2-generic-body\",\n    \"defaultStatus\": \"publish\",\n    \"defaultCategoryId\": 1,\n    \"_categoriesNote\": \"IDs fetched via GET {restApiBase}/categories (CP 002 step 2). Created automatically via n8n helper workflow.\",\n    \"categories\": [\n      { \"id\": 790703683, \"name\": \"Classical & Modern Philosophy\", \"useWhen\": \"Deep-dive into philosopher perspectives (classical or modern) on a question/phenomenon — not biographical summaries, but argument analysis\" },\n      { \"id\": 62245, \"name\": \"Philosophy of Science\", \"useWhen\": \"Philosophical issues in science: naturalism, evolution, philosophy of creation, limits of scientific method — still framed as philosophy, not popular science articles\" },\n      { \"id\": 790703690, \"name\": \"Psychological Opinion & Perspective\", \"useWhen\": \"Niche opinions/tips on specific psychological phenomena or conditions (e.g., ADHD, anxiety) from a personal/reflective standpoint — NOT general self-help, NOT clinical information articles\" }\n    ],\n    \"tags\": [\n      { \"id\": null, \"name\": \"philosophy\" },\n      { \"id\": null, \"name\": \"psychology\" },\n      { \"id\": null, \"name\": \"existentialism\" },\n      { \"id\": null, \"name\": \"ADHD\" },\n      { \"id\": null, \"name\": \"anxiety\" },\n      { \"id\": null, \"name\": \"philosophy-of-science\" }\n    ]\n  },\n\n  \"medium\": {\n    \"_comment\": \"PERMANENTLY DROPPED (CP 001) — integration token unavailable. This block kept as decision archive; nodes 43-45 are not built.\",\n    \"enabled\": false\n  },\n\n  \"geo\": {\n    \"_comment\": \"Thresholds & targets read by scoring nodes. Recalibrate after ~10 first articles based on score_breakdown column in article_log sheet.\",\n    \"passThreshold\": 80,\n    \"reviseThreshold\": 60,\n    \"maxReviseLoop\": 2,\n    \"targetWordCount\": 1500,\n    \"keywordDensityRange\": [0.005, 0.02],\n    \"minSections\": 5,\n    \"maxSections\": 7,\n    \"minQuestionHeadingRatio\": 0.6,\n    \"minFaqPairs\": 3,\n    \"minFactsRequired\": 5,\n    \"minNumericFactsRequired\": 3\n  },\n\n  \"models\": {\n    \"_comment\": \"Endpoint per role. Outline & schema & guard routed to local Ollama (free). Change paidEndpoint to your provider.\",\n    \"local\": {\n      \"endpoint\": \"http://localhost:11434/api/chat\",\n      \"model\": \"qwen2.5:7b-instruct-q4_K_M\",\n      \"options\": { \"temperature\": 0.3, \"num_ctx\": 8192 }\n    },\n    \"roles\": {\n      \"safetyGuard\": { \"tier\": \"local\", \"temperature\": 0.1 },\n      \"researcher\": { \"tier\": \"paid\", \"requiresWebSearch\": true, \"temperature\": 0.3 },\n      \"outline\": { \"tier\": \"local\", \"temperature\": 0.4 },\n      \"writer\": { \"tier\": \"paid\", \"temperature\": 0.65 },\n      \"critic\": { \"tier\": \"paid\", \"temperature\": 0.2 },\n      \"reviser\": { \"tier\": \"paid\", \"temperature\": 0.5 },\n      \"schema\": { \"tier\": \"local\", \"temperature\": 0.2 }\n    }\n  },\n\n  \"sheets\": {\n    \"_comment\": \"Spreadsheet ID for topic queue & article log. See IMPLEMENTATION_PLAN.md §4 for column list.\",\n    \"spreadsheetId\": \"1TuezG43j45nXBrL-KRq_n-srMZyw_832YBvszmLveuo\",\n    \"topicQueueSheet\": \"topic_queue\",\n    \"articleLogSheet\": \"article_log\"\n  },\n\n  \"telegram\": {\n    \"_comment\": \"Only for result notifications + error alerts. No approval gate (Wait node) in this workflow.\",\n    \"chatId\": \"8675308460\"\n  }\n}\n`;\nconst ctx = JSON.parse(raw);\nreturn [{ json: { contentContext: ctx } }];"
+      },
+      "id": "6ca07386-1103-4979-91ee-b5dd484fcef9",
+      "name": "Code: Load Content Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const a = $('Code: Set Form Run Context').first().json;\nconst b = $('Code: Load Content Context').first().json;\nlet merged = { ...a, contentContext: b.contentContext };\n\nif (merged.publishMode === 'Test') {\n  merged.wordCountTarget = '300';\n  merged.researchMode = 'Concept Only';\n}\n\nreturn [{ json: merged }];"
+      },
+      "id": "ae0fb9ca-7a69-4b37-9c0e-184705428a5d",
+      "name": "Code: Build Run Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst niche = d.contentContext?.site?.niche || '';\nconst topic = d.topic || '';\nconst prompt = `Kamu adalah content policy classifier. Nilai apakah topik berikut layak dijadikan\nartikel blog publik.\n\nTOPIK: ${topic}\nNICHE SITUS: ${niche}\n\nTolak (allowed: false) bila topik:\n- mengandung ujaran kebencian, kekerasan eksplisit, atau konten seksual\n- meminta nasihat medis/hukum/finansial spesifik yang butuh lisensi profesional\n- promosi produk ilegal, penipuan, atau klaim kesehatan tidak berdasar\n- sama sekali di luar niche situs (tidak relevan bagi pembaca)\n\nCONTOH KHUSUS NICHE FILSAFAT/PSIKOLOGI (CP 002):\n- ✅ ALLOWED: \"Perspektif filosofis tentang kenapa penderita ADHD sering ditulis ulang\n  identitasnya lewat diagnosis\" — opini/perspektif umum, bukan permintaan personal.\n- ❌ REJECTED: \"Bagaimana cara mengobati ADHD saya\" / \"Obat apa yang cocok untuk kecemasan\n  saya\" — permintaan saran klinis personal, butuh profesional berlisensi.\n\nBalas HANYA JSON:\n{\"allowed\": boolean, \"reason\": \"<1 kalimat>\", \"severity\": \"none|low|high\"}`;\n\nreturn [{ json: { _guardBody: {\n  model: 'openai/gpt-oss-120b',\n  reasoning_effort: 'low',\n  messages: [\n    { role: 'system', content: prompt },\n    { role: 'user', content: topic }\n  ],\n  max_tokens: 3000,\n  temperature: 0,\n  stream: false,\n  response_format: { type: 'json_object' }\n}} }];"
+      },
+      "id": "21d2ab34-ecfa-4ee1-af22-619e3087f97e",
+      "name": "Code: Build Safety Guard Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._guardBody }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "id": "68e2e591-eef1-4435-96c9-9fa46a6ee15a",
+      "name": "AI Safety Guard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1712,
+        400
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oSM2yzrS4VtlyIcj",
+          "name": "OpenRouter Authorization - GPT OSS 120B"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const responseContent = $json.choices?.[0]?.message?.content || $json.content || '';\n\nfunction parseJson(value) {\n  if (value && typeof value === 'object') return value;\n\n  let text = String(value || '')\n    .replace(/```json?/gi, '')\n    .replace(/```/g, '')\n    .trim();\n  const start = text.indexOf('{');\n  const end = text.lastIndexOf('}');\n  if (start !== -1 && end !== -1 && end > start) {\n    text = text.substring(start, end + 1);\n  }\n\n  try {\n    return JSON.parse(text);\n  } catch (error) {\n    return null;\n  }\n}\n\nconst parsed = parseJson(responseContent);\nconst allowed = parsed?.allowed === true;\nconst reason = String(parsed?.reason || (allowed ? 'Allowed' : 'Rejected')).trim();\nconst severity = String(parsed?.severity || (allowed ? 'low' : 'high')).trim();\n\nreturn [{\n  json: {\n    guard_allowed: allowed ? '1' : '0',\n    guard_reason: reason,\n    guard_severity: severity,\n    guard_result: { allowed, reason, severity }\n  }\n}];"
+      },
+      "id": "f11d9e1a-e061-4c69-a4a8-bade83ba79e5",
+      "name": "Code: Parse Guard Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "guard-allowed",
+              "leftValue": "={{ $json.guard_allowed }}",
+              "rightValue": "1",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6f130dee-7f62-4cbe-9fe0-35b35d48e62f",
+      "name": "If - Topic Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2304,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Code: Build Run Context').first().json;\nconst today = new Date().toISOString().split('T')[0];\nconst keyword = d.targetKeyword || '';\nconst topicDetail = d.topicDetail || '';\nconst brief = $input.first().json || {};\nconst empiricalClaims = Array.isArray(brief.empiricalClaims) ? brief.empiricalClaims : [];\nconst fallbackSeeds = (brief.sectionSeeds || []).filter(s => s.evidenceType === 'empirical').map(s => s.question);\nconst searchTargets = empiricalClaims.length > 0\n  ? empiricalClaims.map((ec, i) => `${i + 1}. ${ec.claim} — query: ${ec.searchQuery}`).join('\\n')\n  : (fallbackSeeds.length > 0\n      ? fallbackSeeds.map((q, i) => `${i + 1}. ${q}`).join('\\n')\n      : `${d.topic} (Concept Brief menilai topik ini murni konseptual — cari HANYA data pendukung yang benar-benar relevan, JANGAN memaksakan angka kalau tidak ada yang otoritatif)`);\nconst targetFactCount = empiricalClaims.length > 0 ? `${empiricalClaims.length}-12` : '3-5';\nconst numericExpectation = empiricalClaims.length > 0 ? 'minimal 3' : 'sebisa mungkin 1';\nconst keyEntities = d.keyEntitiesSeed || '';\nconst sourceLanguage = d.sourceLanguage || null;\nlet sourceLanguageInstruction = '';\nif (sourceLanguage === 'International') sourceLanguageInstruction = '\\n\\nINSTRUKSI BAHASA SUMBER: WAJIB memprioritaskan sumber berbahasa Inggris/internasional (jurnal akademik, situs institusi .edu/.gov, publikasi riset seperti PMC/Nature/BMC/APA). JANGAN memakai blog SEO atau media populer sebagai sumber utama.';\nelse if (sourceLanguage === 'Force Indonesia') sourceLanguageInstruction = '\\n\\nINSTRUKSI BAHASA SUMBER: WAJIB mencari dan memakai sumber berbahasa Indonesia. Gunakan kebebasan penuh dalam memilih sumber — media, jurnal, institusi, riset, apa pun yang paling relevan dan kredibel untuk topik ini, selama berbahasa Indonesia.';\nelse if (sourceLanguage === 'Bilingual') sourceLanguageInstruction = '\\n\\nINSTRUKSI BAHASA SUMBER: WAJIB mengumpulkan campuran sumber internasional/akademik DAN sumber Indonesia — targetkan minimal 2-3 fakta per kelompok bahasa.';\n\nconst prompt = `Kamu adalah research assistant. Kumpulkan fakta terverifikasi untuk artikel tentang:\n\nTOPIK: ${d.topic}\nDETAIL TOPIK: ${topicDetail || 'Tidak ada detail tambahan'}\nTARGET KEYWORD: ${keyword || 'Tidak ada'}\nENTITAS WAJIB DIRISET: ${keyEntities || 'Tidak ada'}\nTANGGAL HARI INI: ${today}${sourceLanguageInstruction}\n\nGunakan web search UNTUK KLAIM SPESIFIK BERIKUT:\n${searchTargets}\n\nAturan wajib:\n- Setiap fakta HARUS punya sumber dengan nama organisasi/publikasi + URL.\n- Prioritaskan data 24 bulan terakhir. Kalau data terbaik lebih lama, sebutkan tahunnya.\n- Kumpulkan ${targetFactCount} fakta, ${numericExpectation} di antaranya mengandung angka konkret\n  (persentase, jumlah, durasi, harga).\n- JANGAN menulis angka yang tidak kamu temukan di sumber. Kalau tidak menemukan data\n  numerik untuk suatu aspek, tulis fakta kualitatif dan set \"hasNumber\": false.\n- Sertakan 2-4 pertanyaan yang paling sering ditanyakan orang tentang topik ini\n  (untuk bahan FAQ section).\n- JANGAN menulis kalimat pembuka/penjelasan apa pun. Balasan HARUS langsung dimulai\n  dengan karakter '{' dan diakhiri '}' - tidak ada teks lain sebelum atau sesudahnya.\n\nBalas HANYA JSON:\n{\n  \"facts\": [\n    {\"claim\": \"<1 kalimat faktual>\", \"hasNumber\": bool, \"value\": \"<angka+unit|null>\",\n     \"sourceName\": \"<nama organisasi>\", \"sourceUrl\": \"<url>\", \"year\": <number|null>}\n  ],\n  \"commonQuestions\": [\"<pertanyaan>\"],\n  \"entities\": [\"<nama kunci yang harus disebut eksplisit>\"],\n  \"notes\": \"<gap riset kalau ada>\"\n}`;\n\nreturn [{ json: {\n  _researchBody: {\n    model: 'tencent/hy3-preview:online',\n    reasoning_effort: 'medium',\n    messages: [\n      { role: 'system', content: 'Anda adalah research assistant. Cari fakta terverifikasi dari web. Balas HANYA JSON valid tanpa markdown, tanpa kalimat pembuka apa pun.' },\n      { role: 'user', content: prompt }\n    ],\n    max_tokens: 16000,\n    temperature: 0.3,\n    response_format: { type: 'json_object' }\n  }\n}}];"
+      },
+      "id": "node-16-research-body",
+      "name": "Code: Build AI Research Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2608,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._researchBody }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "node-17-ai-researcher",
+      "name": "HTTP: AI Researcher",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2912,
+        400
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oSM2yzrS4VtlyIcj",
+          "name": "OpenRouter Authorization - GPT OSS 120B"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._writerBody }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "node-24-ai-writer",
+      "name": "HTTP: AI Writer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5904,
+        400
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oSM2yzrS4VtlyIcj",
+          "name": "OpenRouter Authorization - GPT OSS 120B"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Code: Build Run Context').first().json;\nconst outline = $input.first().json;\nconst research = $('Code: Normalize Research Payload').first().json;\nconst facts = research?.facts || [];\nconst cb = research?.conceptBrief || {};\nconst language = ctx.language || 'Indonesia';\nconst tw = outline.totalTargetWords || ctx.contentContext?.geo?.targetWordCount || 1500;\nconst factsText = facts.slice(0, 12).map((f, i) => `${i + 1}. ${f.claim}${f.value ? ' (' + f.value + ')' : ''} — ${f.sourceName}: ${f.sourceUrl}`).join('\\n');\nconst primarySources = Array.isArray(cb.primarySources) ? cb.primarySources.map((s, i) => `${i + 1}. ${s.author || ''}. ${s.title || ''} (${s.year || 'tahun tidak tersedia'}) — ${s.relevance || ''}`).join('\\n') : '';\nconst sectionText = (outline.sections || []).map((s, i) => `${i + 1}. ## ${s.heading}\\nCLAIM: ${s.sectionClaim}\\nMOVE: ${s.logicalMove?.type} | FROM: ${s.logicalMove?.from} | TO: ${s.logicalMove?.to}`).join('\\n\\n');\nconst briefsText = JSON.stringify(outline.sectionBriefs || []);\nconst faqText = (outline.faq || []).map(q => `### ${q.question}\\n${q.shortAnswer || ''}`).join('\\n\\n');\nconst tone = ctx.contentContext?.tone || {};\nconst toneText = ['voice: ' + (tone.voice || 'reflective'), 'person: ' + (tone.person || 'contextual'), 'stance: ' + (tone.stance || 'take a defensible position'), 'avoid: ' + (tone.avoid || []).join('; '), 'prefer: ' + (tone.prefer || []).join('; ')].join('\\n');\nconst prompt = `Kamu menulis artikel esai reflektif dalam Bahasa ${language}, bukan jawaban chatbot dan bukan artikel teknis ensiklopedis.\\n\\n=== KONTEKS ARGUMEN ===\\nJUDUL: ${outline.workingTitle}\\nLEDE: ${outline.lede}\\nTHESIS: ${outline.thesis}\\nCLOSING: ${outline.closing}\\nCLOSING DELTA: ${outline.closingDelta}\\nARGUMENT PATTERN: ${cb.argumentPattern || ''}\\nEXPECTED INSIGHT: ${cb.expectedInsight || ''}\\nOBJECTION: ${JSON.stringify(outline.objection || {})}\\n\\n=== OUTLINE DAN LOGICAL MOVE ===\\n${sectionText}\\n\\n=== BRIEF PLANNER ===\\n${briefsText}\\n\\n=== FAKTA + SUMBER ===\\n${factsText || '(tidak ada fakta tersedia)'}\\nSUMBER PRIMER:\\n${primarySources || '(tidak ada karya primer tersedia)'}\\nENTITAS KUNCI: ${(outline.resolvedEntities || []).join(', ') || '(tidak ada)'}\\nFAQ:\\n${faqText}\\nTARGET PANJANG: ${tw} kata\\n\\n=== SUARA SITUS ===\\n${toneText}\\n\\n=== ATURAN INTEGRITAS ===\\n1. Jangan mengarang angka, tahun, nama tokoh/studi/organisasi, pengalaman pribadi, diagnosis, gejala, pengobatan, atau kutipan.\\n2. Nama dan konsep harus ada di FAKTA atau concept brief. Kutipan bertanda kutip hanya boleh verbatim dari FAKTA.\\n3. Wajib menyebut minimal satu karya primer yang benar-benar ada di SUMBER PRIMER dengan penulis + judul + tahun.\\n4. Setiap teori/konsep yang diatribusikan kepada tokoh menyebut tokohnya dalam kalimat yang sama.\\n5. Klaim numerik wajib memiliki markdown link sumber di kalimat/paragraf yang sama.\\n\\n=== ATURAN KEDALAMAN ===\\n6. Ikuti logicalMove setiap section. Nyatakan perubahan pemahaman, jangan hanya menambah informasi tentang topik yang sama.\\n7. Jika ada scenePlan, gunakan adegan untuk GENERATE, TEST, atau LIMIT klaim. Jika adegan dihapus dan argumen tetap sama, adegan itu gagal dan harus diubah. Jangan mengarang memoir; gunakan skenario transparan bila detail personal tidak tersedia.\\n8. Setelah sumber disebut, lakukan kerja argumentatif: SUPPORT, TEST, NARROW, atau CONTRAST. Jangan membuat rangkuman literatur yang berhenti pada \"Tokoh X berpendapat Y\".\\n9. Transisi harus menjelaskan kenapa gerakan berikutnya diperlukan.\\n10. Keberatan harus kuat dan jujur; akui concession dan tunjukkan apakah tesis SURVIVES, NARROWS, atau CHANGES.\\n11. Jangan mengulang sectionClaim dengan contoh baru.\\n12. Pembuka boleh memakai adegan, pengamatan, atau ketegangan; tidak harus menjawab heading. Penutup wajib menghasilkan CLOSING DELTA, bukan rangkuman atau ajakan generik.\\n13. Jangan memakai tabel, emoji, sisipan berlabel seperti \"Kalimat penentu:\", atau definisi kamus berulang.\\n14. Gunakan orang kedua hanya jika konkret dan tidak mengklaim isi kepala pembaca.\\n15. FAQ setelah penutup, dengan jawaban 40-70 kata.\\n16. Format struktur wajib: tulis pembuka tanpa heading, lalu keluarkan tepat satu heading Markdown ## untuk setiap section di OUTLINE DAN LOGICAL MOVE menggunakan judul heading yang sama atau sangat dekat. Jangan gabungkan atau menghilangkan section. Setelah seluruh section dan penutup, keluarkan ## FAQ dan pertanyaan FAQ sebagai ###.\\n17. Sebelum metadata, pastikan artikel memiliki minimal tiga heading ## selain ## FAQ, dan urutan heading mengikuti OUTLINE.\\n18. Output hanya Markdown artikel lalu ---METADATA--- dan JSON metadata yang valid.`;\nreturn [{ json: { _writerBody: { model: 'gpt-5.4-nano', messages: [{ role: 'system', content: `Kamu adalah penulis esai reflektif. Ikuti kontrak argumen dan integritas dengan ketat.\\n\\nTONE SITUS:\\n${toneText}` }, { role: 'user', content: prompt }], max_tokens: Math.ceil(tw * 2.2) + 2500, temperature: 0.65 } } }];"
+      },
+      "id": "node-23-writer-body",
+      "name": "Code: Build AI Writer Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5600,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.choices?.[0]?.message?.content || '';\nfunction tryParse(v) {\n  if (v && typeof v === 'object' && !Array.isArray(v)) return v;\n  let t = String(v || '').replace(/```json?/gi,'').replace(/```/g,'').trim();\n  const s = t.indexOf('{'); const e = t.lastIndexOf('}');\n  if (s !== -1 && e !== -1 && e > s) t = t.substring(s, e + 1);\n  try { return JSON.parse(t); } catch(e) { return null; }\n}\nconst parsed = tryParse(raw);\nconst facts = Array.isArray(parsed?.facts) ? parsed.facts : [];\nconst commonQuestions = Array.isArray(parsed?.commonQuestions) ? parsed.commonQuestions : [];\nconst entities = Array.isArray(parsed?.entities) ? parsed.entities : [];\nconst notes = parsed?.notes || '';\nreturn [{ json: { facts, commonQuestions, entities, notes, parseOk: facts.length > 0 } }];"
+      },
+      "id": "node-18-parse-research",
+      "name": "Code: Parse Research",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst researchRan = d.researchRan !== false;\n\nif (!researchRan) {\n  const cb = d.conceptBrief || {};\n  const seeds = (cb.sectionSeeds || []).length;\n  const thinkers = (cb.thinkers || []).length;\n  if (seeds < 5 || thinkers < 1) throw new Error(`Concept-only validation FAIL: sectionSeeds ${seeds}/5, thinkers ${thinkers}/1`);\n  return [{ json: { ...d, _validated: true } }];\n}\n\nconst brief = $('Code: Parse Concept Brief').first().json || {};\nconst claimsRequested = Math.max(1, (brief.empiricalClaims || []).length);\nconst minFacts = claimsRequested;\nconst minNumeric = Math.min(claimsRequested, 1);\nconst numericFacts = (d.facts || []).filter(f => f.hasNumber && f.sourceUrl);\nconst factCount = (d.facts || []).length;\nconst numericCount = numericFacts.length;\nif (factCount < minFacts || numericCount < minNumeric) {\n  throw new Error(`Validate Research: FAIL — facts ${factCount}/${minFacts}, numeric+source ${numericCount}/${minNumeric}`);\n}\nreturn [{ json: { ...d, _validated: true, _factCount: factCount, _numericCount: numericCount } }];"
+      },
+      "id": "node-19-validate-facts",
+      "name": "Code: Validate Research Facts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3504,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Code: Build Run Context').first().json;\nconst research = $input.first().json;\nconst facts = research.facts || [];\nconst commonQuestions = research.commonQuestions || [];\nconst factsList = facts.map((f,i) => `${i+1}. ${f.claim} ${f.value ? '(' + f.value + ')' : ''} — ${f.sourceName}`).join('\\n');\nconst cb = research.conceptBrief || {};\nconst angle = cb.angle || '';\nconst sectionSeeds = Array.isArray(cb.sectionSeeds) ? cb.sectionSeeds.map(s => `- ${s.question} (${s.evidenceType})`).join('\\n') : '';\nconst questionsList = commonQuestions.join(', ');\nconst language = ctx.language || 'Indonesia';\nconst prompt = `BAHASA ARTIKEL: ${language}. Tulis outline dan seluruh field teks dalam Bahasa ${language}. Jangan menerjemahkan istilah teknis/filosofis tanpa padanan baku, nama resmi teori, atau kutipan verbatim.\n\nKamu adalah content strategist yang menyusun satu argumen artikel, bukan daftar jawaban untuk chatbot.\n\nTOPIK: ${ctx.topic}\nDETAIL TOPIK: ${ctx.topicDetail || ''}\nTARGET KEYWORD: ${ctx.targetKeyword || ''}\nENTITAS WAJIB: ${ctx.keyEntitiesSeed || ''}\nFAQ SEED: ${ctx.faqSeed || ''}\nTARGET PANJANG: ${ctx.wordCountTarget || 'Auto'}\nFAKTA TERSEDIA: ${factsList}\nPERTANYAAN UMUM: ${questionsList}\nANGLE: ${angle}\nARGUMENT PATTERN: ${cb.argumentPattern || ''}\nPATTERN RATIONALE: ${cb.patternRationale || ''}\nEXPECTED INSIGHT: ${cb.expectedInsight || ''}\nSECTION SEEDS:\n${sectionSeeds}\nTONE: ${JSON.stringify(ctx.contentContext?.tone || {})}\n\nATURAN OUTLINE:\n1. Buat TEPAT 5 H2 isi, lalu FAQ sebagai section terakhir. Jangan keluarkan 4 atau 6; hitung array sections sebelum mengakhiri JSON. Maksimal 2 heading isi boleh berbentuk pertanyaan; sisanya heading tematik.\n2. Susun progresi berdasarkan ARGUMENT PATTERN. Setiap section harus mengubah pemahaman pembaca, bukan hanya menambahkan fakta.\n3. Setiap section wajib memiliki logicalMove.type tepat satu dari BUILD, DEEPEN, TEST, NARROW, TURN; logicalMove.from dan logicalMove.to harus menjelaskan perubahan nyata.\n4. Jangan gunakan \"selanjutnya\", \"juga membahas\", atau \"bagian ini menjelaskan\" sebagai logicalMove. Jika dua section bisa ditukar tanpa merusak argumen, susun ulang.\n5. Wajib ada satu keberatan terbaik yang benar-benar punya dasar. Isi objectionBasis, concession, dan thesisEffect; thesisEffect hanya SURVIVES, NARROWS, atau CHANGES. Keberatan boleh menjadi salah satu dari tepat 5 section isi.\n6. Buat lede, thesis, closing, dan closingDelta. closingDelta harus berupa wawasan/konsekuensi/batas/pertanyaan yang hanya masuk akal setelah artikel dibaca.\n7. Setiap section tetap punya answerFocus untuk kompatibilitas Planner, tetapi answerFocus bukan alasan untuk membuat heading chatbot.\n8. Tugaskan fakta lewat factIndexes. Gabungkan entitas form + riset. FAQ seed harus didahulukan.\n9. Kalau TARGET KEYWORD kosong, isi resolvedTargetKeyword. Kalau target panjang angka, pakai sebagai totalTargetWords.\n\nSEBELUM MENGIRIM: pastikan sections.length === 5, faq.length >= 4, setiap section memiliki sectionClaim dan logicalMove, serta objection lengkap. Jika belum, perbaiki JSON dulu. Jangan mengakhiri jawaban dengan 3 section atau FAQ kurang dari 4.\\n\\nBalas HANYA JSON:\n{\n  \"workingTitle\":\"<judul>\",\n  \"resolvedTargetKeyword\":null,\n  \"resolvedEntities\":[\"...\"],\n  \"lede\":\"<arah pembuka>\",\n  \"thesis\":\"<satu klaim utama>\",\n  \"closing\":\"<arah penutup>\",\n  \"closingDelta\":\"<wawasan yang diperoleh>\",\n  \"objection\":{\"sectionHeading\":\"<heading>\",\"objectionBasis\":\"...\",\"concession\":\"...\",\"thesisEffect\":\"SURVIVES|NARROWS|CHANGES\"},\n  \"sections\":[{\"heading\":\"...\",\"answerFocus\":\"...\",\"sectionClaim\":\"...\",\"logicalMove\":{\"type\":\"BUILD|DEEPEN|TEST|NARROW|TURN\",\"from\":\"...\",\"to\":\"...\"},\"factIndexes\":[0],\"targetWords\":250}],\n  \"faq\":[{\"question\":\"...\",\"shortAnswer\":\"...\"}],\n  \"totalTargetWords\":1500\n}`;\nreturn [{ json: { _outlineBody: { model: 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: 'Anda adalah content strategist. Balas HANYA JSON valid tanpa markdown.' }, { role: 'user', content: prompt }], max_tokens: 5500, temperature: 0.4, response_format: { type: 'json_object' } } } }];"
+      },
+      "id": "node-20-outline-body",
+      "name": "Code: Build AI Outline Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3808,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._outlineBody }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "node-21-outline-planner",
+      "name": "HTTP: AI Outline Planner",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        4112,
+        208
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Y09cqMXmC4Fu7rDf",
+          "name": "Groq API"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.message?.content || $json.choices?.[0]?.message?.content || '';\nfunction pj(v) { if (v && typeof v === 'object' && !Array.isArray(v)) return v; let t = String(v || '').replace(/```json?/gi,'').replace(/```/g,'').trim(); const s = t.indexOf('{'); const e = t.lastIndexOf('}'); if (s !== -1 && e !== -1 && e > s) t = t.substring(s, e + 1); try { return JSON.parse(t); } catch(e) { return null; } }\nconst p = pj(raw);\nconst moves = ['BUILD', 'DEEPEN', 'TEST', 'NARROW', 'TURN'];\nconst effects = ['SURVIVES', 'NARROWS', 'CHANGES'];\nif (!p || !p.workingTitle) throw new Error('Parse Outline: missing workingTitle');\nif (!Array.isArray(p.sections) || p.sections.length < 4 || p.sections.length > 6) throw new Error('Parse Outline: sections must be 4-6');\nif (!Array.isArray(p.faq) || p.faq.length < 3) throw new Error('Parse Outline: faq < 3');\nfor (const [i, s] of p.sections.entries()) {\n  if (!s.heading || !s.sectionClaim || !s.answerFocus) throw new Error(`Parse Outline: section ${i + 1} missing claim/focus`);\n  if (!s.logicalMove || !moves.includes(s.logicalMove.type) || !String(s.logicalMove.from || '').trim() || !String(s.logicalMove.to || '').trim()) throw new Error(`Parse Outline: section ${i + 1} invalid logicalMove`);\n}\nif (!p.lede || !p.thesis || !p.closing || !p.closingDelta) throw new Error('Parse Outline: missing lede/thesis/closing contract');\nif (!p.objection || !p.objection.objectionBasis || !p.objection.concession || !effects.includes(p.objection.thesisEffect)) throw new Error('Parse Outline: invalid objection contract');\nconst claims = p.sections.map(s => String(s.sectionClaim).toLowerCase().replace(/\\s+/g, ' ').trim());\nif (new Set(claims).size !== claims.length) throw new Error('Parse Outline: duplicate sectionClaim');\nif (!p.totalTargetWords) p.totalTargetWords = 1500;\nreturn [{ json: { ...p, _outlineParsed: true } }];"
+      },
+      "id": "node-22-parse-outline",
+      "name": "Code: Parse Outline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.choices?.[0]?.message?.content || $json.content || '';\nlet content = raw.replace(/^```(?:markdown|md)?\\s*\\n?/i, '').replace(/\\n?```\\s*$/i, '');\nconst delimIdx = content.indexOf('---METADATA---');\nconst draftMd = (delimIdx !== -1 ? content.slice(0, delimIdx) : content).trim();\nlet quotes = [], citations = [];\nif (delimIdx !== -1) {\n  let metaText = content.slice(delimIdx + '---METADATA---'.length).trim().replace(/```json?/gi, '').replace(/```/g, '').trim();\n  const s = metaText.indexOf('{');\n  const e = metaText.lastIndexOf('}');\n  if (s !== -1 && e !== -1 && e > s) {\n    try {\n      const meta = JSON.parse(metaText.substring(s, e + 1));\n      quotes = Array.isArray(meta.quotes) ? meta.quotes : [];\n      citations = Array.isArray(meta.citations) ? meta.citations : [];\n    } catch (e) {}\n  }\n}\nlet finalDraft = draftMd;\nconst m = finalDraft.match(/^#{1,3}\\s/);\nif (m) finalDraft = finalDraft.substring(finalDraft.indexOf(m[0]));\nfinalDraft = finalDraft.trim();\nif (!finalDraft || finalDraft.length < 100) throw new Error('Parse Draft: too short');\nconst draftHeadings = [...finalDraft.matchAll(/^##\\s+(.+)$/gm)].map(m => m[1].trim()).filter(h => !/^faq$/i.test(h));\nconst expectedSections = (() => { try { return $('Code: Parse Outline').first().json.sections || []; } catch (e) { return []; } })();\nif (expectedSections.length >= 3 && draftHeadings.length < 3) throw new Error(`Parse Draft: expected at least 3 section headings, found ${draftHeadings.length}`);\nreturn [{ json: { draft: finalDraft, draftLength: finalDraft.length, quotes, citations, draftHeadings } }];"
+      },
+      "id": "node-25-parse-draft",
+      "name": "Code: Parse Draft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6208,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// CP020 Batch 4 — deterministic quality checks\nconst draft = $input.first().json.draft || '';\nconst parts = draft.split(/(?=^## )/m);\nconst sections = [];\nfor (const part of parts) {\n  const match = part.match(/^## (.+)\\n?([\\s\\S]*)/);\n  if (match) sections.push({heading: match[1].trim(), body: match[2].trim()});\n  else if (part.trim()) sections.push({heading: 'Intro', body: part.trim()});\n}\nconst allText = sections.map(s => s.body).join('\\n\\n');\nconst paragraphs = allText.split(/\\n\\s*\\n/).filter(p => p.trim()).map(p => p.trim());\nlet targetKeyword = '';\ntry { targetKeyword = $('Code: Parse Outline').first().json.resolvedTargetKeyword || ''; } catch (e) {}\nif (!targetKeyword) {\n  try { targetKeyword = $('Code: Build Run Context').first().json.targetKeyword || ''; } catch (e) {}\n}\nconst NUMERIC_CLAIM = /(\\b\\d{1,3}(?:[.,]\\d+)?\\s*%|\\b\\d{4}\\b|\\b\\d+(?:[.,]\\d+)?\\s*(juta|miliar|ribu|x|kali|jam|hari|bulan|tahun|detik|menit)\\b)/gi;\nconst YEAR_NEAR = /\\b(20[12]\\d)\\b/;\nconst FILLER_PATTERNS = [\n  /\\bdi\\s+(era|zaman|dunia)\\s+(yang\\s+)?(serba\\s+)?(digital|modern|terus\\s+berkembang)/i,\n  /\\bseiring\\s+(dengan\\s+)?(perkembangan|kemajuan|berjalannya)/i,\n  /\\btidak\\s+dapat\\s+dipungkiri\\b/i,\n  /\\bsemakin\\s+(hari|berkembangnya)\\b/i,\n  /\\bpada\\s+artikel\\s+(ini|kali\\s+ini)\\b/i,\n  /\\bmari\\s+kita\\s+(bahas|simak|lihat)\\b/i,\n  /\\bsebelum\\s+(kita\\s+)?(masuk|membahas)\\s+lebih\\s+(jauh|dalam)/i,\n  /\\bdalam\\s+dunia\\s+yang\\b/i,\n];\nfunction scoreNoFiller(items) {\n  const flagged = items.filter(s => FILLER_PATTERNS.some(p => p.test((s.body.split(/(?<=[.!?])\\s+/)[0] || ''))));\n  const ratio = items.length ? flagged.length / items.length : 0;\n  return {score: (1 - ratio) * 5, flaggedSections: flagged.map(s => s.heading)};\n}\nconst CITATION_MARKER = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/;\nconst NAMED_ATTRIBUTION = /\\b(menurut|berdasarkan|laporan|survei|studi|riset|data)\\s+(dari\\s+)?[A-Z][\\w&.\\-]*/;\nconst PRIMARY_WORK_CITATION = /\\b(?:[A-Z][\\w.'-]*\\s+){1,8}[A-Z][\\w.'-]*\\s*\\((?:18|19|20)\\d{2}\\)/g;\nfunction scoreCitationRatio(items) {\n  let withClaim = 0, cited = 0;\n  const uncited = [];\n  for (const p of items) {\n    if (!NUMERIC_CLAIM.test(p)) { NUMERIC_CLAIM.lastIndex = 0; continue; }\n    NUMERIC_CLAIM.lastIndex = 0;\n    withClaim++;\n    if (CITATION_MARKER.test(p) || NAMED_ATTRIBUTION.test(p)) cited++;\n    else uncited.push(p.slice(0, 120));\n  }\n  const text = items.join('\\n');\n  const primaryCitations = text.match(PRIMARY_WORK_CITATION) || [];\n  const namedAttributions = text.match(NAMED_ATTRIBUTION) || [];\n  if (!withClaim) return {score: primaryCitations.length ? (namedAttributions.length >= 3 ? 8 : 6) : 0, primaryCitations: primaryCitations.length, namedAttributions: namedAttributions.length, uncited};\n  return {score: (cited / withClaim) * 10, ratio: `${cited}/${withClaim}`, primaryCitations: primaryCitations.length, namedAttributions: namedAttributions.length, uncited};\n}\nfunction scoreStructure(md, items) {\n  const questionWord = /\\b(apa|apakah|bagaimana|kenapa|mengapa|berapa|kapan|siapa|mana|manakah)\\b/i;\n  const qRatio = items.length ? items.filter(s => s.heading.endsWith('?') || questionWord.test(s.heading)).length / items.length : 0;\n  const s3a = Math.min(qRatio / 0.8, 1) * 4;\n  const tail = md.slice(-Math.floor(md.length * 0.3));\n  const hasFaq = /^#{2,3}\\s*(faq|pertanyaan\\s+(yang\\s+)?(sering|umum))/im.test(tail);\n  const qaPairs = (tail.match(/^#{3,4}\\s*[^\\n]*\\?\\s*$/gm) || []).length;\n  const s3b = hasFaq && qaPairs >= 3 ? 5 : hasFaq ? 3 : 0;\n  const hasList = /^\\s*(?:[-*+]|\\d+\\.)\\s+\\S/m.test(md);\n  const s3c = hasList ? 1.5 : 0;\n  return {score: s3a + s3b + s3c, detail: {s3a, s3b, s3c, qRatio, qaPairs, tableScoring: false}};\n}\nfunction scoreEntityClarity(items) {\n  const dangling = /^(hal\\s+ini|ini|itu|tersebut|hal\\s+tersebut|mereka|dia|nya\\b)/i;\n  const bad = items.filter(p => dangling.test(p.trim()));\n  const ratio = items.length ? bad.length / items.length : 0;\n  return {score: Math.max(0, 1 - Math.max(0, ratio - 0.10) / 0.30) * 3, danglingCount: bad.length};\n}\nfunction scoreKeywordDensity(md, keyword) {\n  if (!keyword) return {score: 5, skipped: true};\n  const lower = md.toLowerCase();\n  const kw = keyword.toLowerCase().trim();\n  const occurrences = kw ? Math.max(0, lower.split(kw).length - 1) : 0;\n  const words = lower.match(/[\\p{L}\\p{N}']+/gu) || [];\n  const kwWords = (kw.match(/[\\p{L}\\p{N}']+/gu) || []).length || 1;\n  const density = words.length ? occurrences * kwWords / words.length : 0;\n  let score = 5;\n  if (density > 0.02 && density <= 0.03) score = 5 - ((density - 0.02) / 0.01) * 2;\n  if (density > 0.03) score = Math.max(0, 3 - ((density - 0.03) / 0.02) * 3);\n  return {score, density: (density * 100).toFixed(2) + '%', occurrences};\n}\nconst TEMPORAL_MARKER = /\\b(Hellenistik|Helenistik|pasca[- ]Perang Dunia II|Perang Dunia II|abad ke[- ]\\d+|zaman kuno|modern|kontemporer|historis)\\b/gi;\nfunction scoreFreshness(items) {\n  let fresh = 0, numeric = 0;\n  for (const p of items) {\n    if (NUMERIC_CLAIM.test(p)) { NUMERIC_CLAIM.lastIndex = 0; numeric++; if (YEAR_NEAR.test(p)) fresh++; }\n    NUMERIC_CLAIM.lastIndex = 0;\n  }\n  const text = items.join('\\n');\n  const years = text.match(/\\((?:18|19|20)\\d{2}\\)/g) || [];\n  const periods = text.match(TEMPORAL_MARKER) || [];\n  if (!numeric) return {score: Math.min(1.5, (years.length ? 0.75 : 0) + (periods.length ? 0.75 : 0)), reason: 'tanpa klaim numerik', yearReferences: years.length, periodReferences: periods.length};\n  return {score: Math.min(2, fresh / numeric * 1.5 + (years.length + periods.length ? 0.5 : 0)), freshCount: fresh, numericParagraphs: numeric, yearReferences: years.length, periodReferences: periods.length};\n}\nconst PERSONA_LEAK_PATTERNS = [/\\bkalau\\s+anda\\s+ingin\\s*,?\\s*saya\\s+(bisa|akan|dapat)\\b/i,/\\bjika\\s+anda\\s+(mau|ingin)\\s*,?\\s*saya\\s+(bisa|akan|dapat)\\b/i,/\\bsaya\\s+bisa\\s+menuliskan\\b/i,/\\bsaya\\s+bisa\\s+membuatkan\\b/i,/\\bmau\\s+saya\\s+(buatkan|tuliskan|lanjutkan|jelaskan)\\b/i,/\\bberi\\s*tahu\\s+saya\\s+jika\\b/i,/\\blet\\s+me\\s+know\\s+if\\s+you\\b/i,/\\bwould\\s+you\\s+like\\s+me\\s+to\\b/i,/\\bfeel\\s+free\\s+to\\s+ask\\b/i,/\\bas\\s+an\\s+ai\\s+language\\s+model\\b/i,/\\bsebagai\\s+(sebuah\\s+)?model\\s+bahasa\\b/i];\nfunction detectPersonaLeak(items) { const matches = items.filter(p => PERSONA_LEAK_PATTERNS.some(re => re.test(p))).map(p => p.slice(0, 160)); return {detected: matches.length > 0, matches}; }\nfunction detectQualityGuards(md, items) {\n  const tableRows = md.match(/^\\s*\\|.+\\|\\s*$/gm) || [];\n  const hasTable = tableRows.length > 0 && /^\\s*\\|[\\s:|-]+\\|\\s*$/m.test(md);\n  const emojis = md.match(/[\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{27BF}]/gu) || [];\n  const labels = md.match(/(?:Kalimat (?:yang bisa kamu jadikan pegangan|yang bisa kamu kutip)|Kalimat penentu|Poin penting|Kalimat kunci)\\s*:/gi) || [];\n  const openingMissing = md.trimStart().startsWith('## ') || md.trimStart().startsWith('### ');\n  const faqIndex = items.findIndex(s => /^(faq|pertanyaan)/i.test(s.heading));\n  const beforeFaq = faqIndex > 0 ? items[faqIndex - 1].body : '';\n  const closingSignal = /(?:pada akhirnya|yang tersisa|dengan demikian|setelah semua|barangkali|mungkin)/i.test(beforeFaq);\n  return {hardFail: hasTable || emojis.length > 0 || labels.length > 0, hasTable, tableRows: tableRows.length, emojiCount: emojis.length, labeledInsertions: labels, openingMissing, closingMissing: faqIndex > 0 && !closingSignal};\n}\nconst answerFirst = scoreNoFiller(sections);\nconst citation = scoreCitationRatio(paragraphs);\nconst structure = scoreStructure(draft, sections);\nconst selfContained = scoreEntityClarity(paragraphs);\nconst language = scoreKeywordDensity(draft, targetKeyword);\nconst freshness = scoreFreshness(paragraphs);\nconst personaLeak = detectPersonaLeak(paragraphs);\nconst qualityGuards = detectQualityGuards(draft, sections);\nreturn [{json: {draft, ruleScores: {answerFirst: +(answerFirst.score).toFixed(2), citation: +(citation.score * 0.4).toFixed(2), structure: +structure.score.toFixed(2), selfContained: +(selfContained.score * (4/3)).toFixed(2), language: +(language.score * 1.4).toFixed(2), freshness: +(freshness.score * 0.5).toFixed(2)}, personaLeak, qualityGuards, diagnostics: {answerFirst, citation, structure, selfContained, language, freshness, sectionCount: sections.length, paragraphCount: paragraphs.length, targetKeyword}}}];"
+      },
+      "id": "node-26-geo-rule-checker",
+      "name": "Code: GEO Rule Checker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6512,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Code: Build Run Context').first().json;\nconst outline = $input.first().json;\nconst research = $('Code: Normalize Research Payload').first().json;\nconst facts = research?.facts || [];\nconst cb = research?.conceptBrief || {};\nconst entities = outline.resolvedEntities || [];\nconst thinkers = Array.isArray(cb.thinkers) ? cb.thinkers.map(t => `${t.name}: ${t.position}${t.work ? ' (' + t.work + ')' : ''}`).join('; ') : '';\nconst concepts = Array.isArray(cb.keyConcepts) ? cb.keyConcepts.map(c => `${c.term}: ${c.definition}`).join('; ') : '';\nconst debates = Array.isArray(cb.debates) ? cb.debates.map(d => `${d.claim} vs ${d.counterClaim}`).join(' | ') : '';\nconst language = ctx.language || 'Indonesia';\nconst factsText = facts.slice(0, 12).map((f, i) => `${i}. ${f.claim}${f.value ? ' (' + f.value + ')' : ''} — ${f.sourceName}: ${f.sourceUrl}`).join('\\n');\nconst sectionsText = (outline.sections || []).map((s, i) => `${i + 1}. ## ${s.heading}\\nCLAIM: ${s.sectionClaim}\\nMOVE: ${s.logicalMove?.type} | FROM: ${s.logicalMove?.from} | TO: ${s.logicalMove?.to}\\nFOCUS: ${s.answerFocus}`).join('\\n\\n');\nconst faqText = (outline.faq || []).map(q => `- ${q.question}`).join('\\n');\nconst prompt = `BAHASA ARTIKEL: ${language}. Susun brief penulisan argumentatif dalam Bahasa ${language}.\\n\\nKamu adalah editor senior. Brief ini harus membantu Writer mengembangkan satu argumen tanpa mengubah logicalMove dari Outline dan tanpa mengarang pengalaman, fakta, nama, atau kutipan. Jangan membuat draft jawaban paralel untuk setiap section.\\n\\nJUDUL: ${outline.workingTitle}\\nLEDE: ${outline.lede}\\nTHESIS: ${outline.thesis}\\nCLOSING ARAH: ${outline.closing}\\nCLOSING DELTA: ${outline.closingDelta}\\nARGUMENT PATTERN: ${cb.argumentPattern || ''}\\nEXPECTED INSIGHT: ${cb.expectedInsight || ''}\\nOBJECTION: ${JSON.stringify(outline.objection || {})}\\nOUTLINE SECTIONS:\\n${sectionsText}\\nFAQ:\\n${faqText}\\nFAKTA + SUMBER:\\n${factsText || '(tidak ada)'}\\nENTITAS: ${entities.join(', ') || '(tidak ada)'}\\nTHINKERS: ${thinkers}\\nKEY CONCEPTS: ${concepts}\\nDEBATES: ${debates}\\n\\nUntuk setiap section, keluarkan:\\n- heading: salin persis.\\n- sectionClaim: salin persis.\\n- logicalMove: salin type/from/to persis; jangan mengganti gerakannya.\\n- scenePlan: null atau {detail, friction, function}; function hanya GENERATE, TEST, atau LIMIT. Adegan harus bekerja sebagai alat berpikir, bukan dekorasi.\\n- sourceUses: array {source, function, impact}; function hanya SUPPORT, TEST, NARROW, atau CONTRAST. impact wajib menyebut perubahan pada argumen.\\n- transitionClaim: satu kalimat yang menjelaskan kenapa section berikutnya diperlukan; untuk section terakhir boleh string kosong.\\n- stanceNote: pemikir/teori/riset spesifik atau string kosong.\\n- quotableDraft: kalimat asli yang menyatu dalam prosa, tanpa label.\\n\\nUntuk FAQ, keluarkan faqBriefs dengan question dan draftAnswer 40-70 kata.\\n\\nBalas HANYA JSON:\\n{\"sectionBriefs\":[{\"heading\":\"...\",\"sectionClaim\":\"...\",\"logicalMove\":{\"type\":\"BUILD|DEEPEN|TEST|NARROW|TURN\",\"from\":\"...\",\"to\":\"...\"},\"scenePlan\":null,\"sourceUses\":[{\"source\":\"...\",\"function\":\"SUPPORT|TEST|NARROW|CONTRAST\",\"impact\":\"...\"}],\"transitionClaim\":\"...\",\"stanceNote\":\"...\",\"quotableDraft\":\"...\"}],\"faqBriefs\":[{\"question\":\"...\",\"draftAnswer\":\"...\"}]}`;\nreturn [{ json: { _plannerBody: { model: 'deepseek-v4-flash-free', messages: [{ role: 'system', content: 'Anda editor senior. Balas HANYA JSON valid tanpa markdown.' }, { role: 'user', content: prompt }], max_tokens: 16000, temperature: 0.4, response_format: { type: 'json_object' } }, _outline: outline } }];"
+      },
+      "id": "80889b12-aeef-4de4-9705-87aa926071d4",
+      "name": "Code: Build AI Writing Planner Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4704,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://opencode.ai/zen/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._plannerBody }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "50d4d617-af70-4a85-8b39-38a4e59cbe01",
+      "name": "HTTP: AI Writing Planner",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5008,
+        400
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1Aa7IYAP9EozXqTz",
+          "name": "OpenCode Zen"
+        }
+      },
+      "notes": "CP 006 — WAJIB: pasang credential 'OpenRouter Authorization - GPT OSS 120B' (httpHeaderAuth) MANUAL di UI n8n. n8n MCP tidak bisa menautkan credential ke node httpRequest."
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResp = $input.first().json;\nconst carried = $('Code: Build AI Writing Planner Body').first().json;\nconst outline = carried._outline || {};\nfunction pj(v) { if (v && typeof v === 'object' && !Array.isArray(v)) return v; let t = String(v || '').replace(/```json?/gi, '').replace(/```/g, '').trim(); const s = t.indexOf('{'); const e = t.lastIndexOf('}'); if (s !== -1 && e !== -1) t = t.substring(s, e + 1); try { return JSON.parse(t); } catch (e) { return null; } }\nconst p = pj(apiResp.choices?.[0]?.message?.content || apiResp.content || '');\nconst moves = ['BUILD', 'DEEPEN', 'TEST', 'NARROW', 'TURN'];\nconst sceneFunctions = ['GENERATE', 'TEST', 'LIMIT'];\nconst sourceFunctions = ['SUPPORT', 'TEST', 'NARROW', 'CONTRAST'];\nconst expected = outline.sections || [];\nconst briefs = Array.isArray(p?.sectionBriefs) ? p.sectionBriefs : [];\nif (briefs.length !== expected.length) throw new Error(`Parse Planner Result: briefs=${briefs.length}, expected=${expected.length}`);\nfor (const [i, brief] of briefs.entries()) {\n  const expectedSection = expected[i];\n  brief.heading = expectedSection.heading;\n  brief.sectionClaim = expectedSection.sectionClaim;\n  if (!brief.logicalMove || brief.logicalMove.type !== expectedSection.logicalMove.type || !moves.includes(brief.logicalMove.type) || !brief.logicalMove.from || !brief.logicalMove.to) throw new Error(`Parse Planner Result: section ${i + 1} invalid logicalMove`);\n  if (brief.scenePlan && !sceneFunctions.includes(brief.scenePlan.function)) throw new Error(`Parse Planner Result: section ${i + 1} invalid scenePlan`);\n  if (!Array.isArray(brief.sourceUses) || brief.sourceUses.some(s => !sourceFunctions.includes(s.function) || !s.impact)) throw new Error(`Parse Planner Result: section ${i + 1} invalid sourceUses`);\n  if (i < briefs.length - 1 && !brief.transitionClaim) throw new Error(`Parse Planner Result: section ${i + 1} missing transitionClaim`);\n}\nreturn [{ json: { ...outline, sectionBriefs: briefs, faqBriefs: Array.isArray(p?.faqBriefs) ? p.faqBriefs : [], plannerOk: true, plannerNote: 'argument contract valid' } }];"
+      },
+      "id": "6363f4cb-33da-46b7-ba82-fa3dc312b7d8",
+      "name": "Code: Parse Planner Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5312,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const draft = $input.first().json.draft || '';\nconst outline = $('Code: Parse Outline').first().json;\nconst targetKeyword = outline?.resolvedTargetKeyword || $('Code: Build Run Context').first().json?.targetKeyword || '';\nconst normalizer = $('Code: Normalize Research Payload').first().json || {};\nconst conceptBrief = normalizer.conceptBrief || {};\nconst entities = (outline?.resolvedEntities || []).join(', ');\nconst cbAngle = conceptBrief.angle || '';\nconst cbThinkers = (conceptBrief.thinkers || []).map(t => t.name).join(', ');\n\nconst prompt = `Kamu adalah auditor konten yang skeptis dan ketat. Nilai draft artikel berikut terhadap rubric GEO. Kamu TIDAK menulis ulang apa pun — hanya menilai dan menunjuk masalah spesifik.\n\nDRAFT:\n${draft}\n\nTARGET KEYWORD: ${targetKeyword}\nENTITAS KUNCI  : ${entities}\nANGLE ARTIKEL (dari concept brief, konteks saja): ${cbAngle}\nTHINKERS RUJUKAN (dari concept brief, konteks saja): ${cbThinkers}\n\nNilai 6 kriteria berikut. Bersikap ketat: kalau ragu, beri skor lebih rendah.\n\nA. ANSWER_FIRST — untuk SETIAP H2, apakah paragraf pembukanya menjawab langsung heading itu secara utuh? (2 = ya lengkap, 1 = menjawab tapi tidak lengkap, 0 = basa-basi/tidak menjawab)\n\nB. VAGUE_ATTRIBUTION — daftar kalimat yang memakai atribusi tanpa nama sumber.\n\nC. SELF_CONTAINED — baca setiap section seolah-olah section lain tidak ada. Apakah masih utuh maknanya? (2 = utuh, 1 = sebagian bergantung konteks luar, 0 = tidak bermakna sendirian)\n\nD. TONE — skala 1-5. Niche filsafat/psikologi: opini BOLEH, yang dinilai apakah beralasan. 5 = stance jelas + dirujuk ke filsuf/teori/riset spesifik, 1 = klaim tanpa dasar.\n\nE. QUOTABLE — untuk setiap section, hitung kalimat yang ringkas, definitif, dan bermakna utuh bila dikutip sendirian.\n\nF. FRESHNESS — flag data yang disajikan sebagai terkini tapi tahunnya lama, atau klaim tren tanpa periode waktu.\n\nBalas HANYA JSON:\n{\n  \"answerFirst\": [{\"heading\": \"...\", \"score\": 0, \"issue\": \"...\"}],\n  \"vagueAttribution\": [{\"sentence\": \"...\", \"suggestion\": \"...\"}],\n  \"selfContained\": [{\"heading\": \"...\", \"score\": 0, \"issue\": \"...\"}],\n  \"toneScore\": 3,\n  \"toneIssues\": [\"...\"],\n  \"quotable\": [{\"heading\": \"...\", \"count\": 0}],\n  \"freshnessIssues\": [\"...\"],\n  \"topFixes\": [\"...\"]\n}`;\n\nreturn [{ json: { _criticBody: { model: 'openai/gpt-oss-120b', reasoning_effort: 'medium', messages: [{ role: 'system', content: 'Anda adalah auditor konten yang skeptis. Nilai draft terhadap rubric GEO. Balas HANYA JSON valid.' }, { role: 'user', content: prompt }], max_tokens: 5000, temperature: 0.2, response_format: { type: 'json_object' } } } }];"
+      },
+      "id": "node-27-critic-body",
+      "name": "Code: Build AI Critic Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6800,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._criticBody }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "node-28-ai-critic",
+      "name": "HTTP: AI GEO Critic",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        7104,
+        400
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oSM2yzrS4VtlyIcj",
+          "name": "OpenRouter Authorization - GPT OSS 120B"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const diag = $('Code: GEO Rule Checker').first().json.diagnostics || {};\nconst n_section = diag.sectionCount || 1;\nconst n_paragraf = diag.paragraphCount || 1;\n\nfunction tryParse(v) {\n  if (v && typeof v === 'object' && !Array.isArray(v)) return v;\n  let t = String(v || '').replace(/```json?/gi,'').replace(/```/g,'').trim();\n  const s = t.indexOf('{'); const e = t.lastIndexOf('}');\n  if (s !== -1 && e !== -1 && e > s) t = t.substring(s, e + 1);\n  try { return JSON.parse(t); } catch(e) { return null; }\n}\n\nconst raw = $json.choices?.[0]?.message?.content || '';\nconst c = tryParse(raw);\n\nif (!c || typeof c !== 'object') {\n  return [{ json: { aiScores: { answerFirst: 12, citation: 2.4, selfContained: 9.6, language: 7.8, freshness: 0.6, structure: 0 }, criticFailed: true, critique: null, criticNote: 'parse failed' } }];\n}\n\nconst af = Array.isArray(c.answerFirst) ? c.answerFirst.map(x => x.score || 0) : [];\nconst ai_answerFirst = n_section > 0 ? (af.reduce((a,b) => a+b, 0) / (n_section * 2)) * 20 : 0;\n\nconst n_vague = Array.isArray(c.vagueAttribution) ? c.vagueAttribution.length : 0;\nconst ai_citation = Math.max(0, (1 - n_vague / Math.max(1, n_paragraf))) * 4;\n\nconst sc = Array.isArray(c.selfContained) ? c.selfContained.map(x => x.score || 0) : [];\nconst ai_selfContained = n_section > 0 ? (sc.reduce((a,b) => a+b, 0) / (n_section * 2)) * 16 : 0;\n\nconst ts = typeof c.toneScore === 'number' ? c.toneScore : 3;\nconst ai_toneRaw = ((ts - 1) / 4) * 9;\n\nconst quotable = Array.isArray(c.quotable) ? c.quotable : [];\nconst ai_quotable = (quotable.filter(q => q.count >= 1).length / Math.max(1, n_section)) * 4;\n\nconst ai_language = ai_toneRaw + ai_quotable;\n\nconst n_fresh = Array.isArray(c.freshnessIssues) ? c.freshnessIssues.length : 0;\nconst ai_freshness = Math.max(0, 1 - n_fresh / Math.max(1, n_section)) * 1;\n\nreturn [{ json: { aiScores: { answerFirst: ai_answerFirst, citation: ai_citation, selfContained: ai_selfContained, language: ai_language, freshness: ai_freshness, structure: 0 }, criticFailed: false, critique: c, criticNote: 'ok' } }];"
+      },
+      "id": "node-29-parse-critique",
+      "name": "Code: Parse Critique",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7408,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const draft = $('Code: GEO Rule Checker').first().json.draft || '';\nconst ruleScores = $('Code: GEO Rule Checker').first().json.ruleScores || {};\nconst aiScores = $input.first().json.aiScores || {};\nconst criticFailed = $input.first().json.criticFailed || false;\nconst critique = $input.first().json.critique || null;\n\nconst GATE_WEIGHTS = { answerFirst: { rule: 5, ai: 20 }, citation: { rule: 4, ai: 4 }, structure: { rule: 15, ai: 0 }, selfContained: { rule: 4, ai: 16 }, language: { rule: 7, ai: 13 }, freshness: { rule: 1, ai: 1 } };\nconst NORM = 100 / 90;\n\nconst categories = Object.keys(GATE_WEIGHTS);\nconst breakdown = {};\nlet total = 0;\n\nfor (const k of categories) {\n  const max = (GATE_WEIGHTS[k].rule + GATE_WEIGHTS[k].ai) * NORM;\n  const got = ((ruleScores[k] ?? 0) + (aiScores[k] ?? 0)) * NORM;\n  const clamped = Math.max(0, Math.min(got, max));\n  breakdown[k] = { score: +clamped.toFixed(1), max: +max.toFixed(1), pct: Math.round((clamped / max) * 100) };\n  total += clamped;\n}\n\nconst geoScore = Math.round(total);\nlet verdict;\nif (criticFailed) { verdict = 'REVISE'; }\nelse if (geoScore >= 80) { verdict = 'PASS'; }\nelse if (geoScore >= 60) { verdict = 'REVISE'; }\nelse { verdict = 'REJECT'; }\n\n// Hard-fail deterministik: AI persona leak (chatbot-style meta-commentary bocor ke badan artikel).\n// Ditemukan di eksekusi 992 -- Critic mencatatnya di toneIssues tapi tidak set criticFailed=true,\n// sehingga skor agregat tinggi tetap PASS meski ada kalimat \"Kalau Anda ingin, saya bisa menuliskan...\".\n// Rule-based check ini tidak bergantung pada judgement AI, jadi selalu memaksa REVISE kalau PASS.\nconst personaLeak = $('Code: GEO Rule Checker').first().json.personaLeak || { detected: false, matches: [] };\nconst qualityGuards = $('Code: GEO Rule Checker').first().json.qualityGuards || { hardFail: false, openingMissing: false, closingMissing: false }; \nlet failedCategories = categories.filter(k => breakdown[k].pct < 70);\nconst topFixes = critique?.topFixes ? [...critique.topFixes] : [];\nif (personaLeak.detected) {\n  if (verdict === 'PASS') verdict = 'REVISE';\n  failedCategories = [...new Set([...failedCategories, 'personaLeak'])];\n  topFixes.unshift(`WAJIB: Hapus kalimat yang bocor dari persona AI (bukan gaya artikel, melainkan komentar ala chatbot ke pembaca) -- contoh yang ditemukan: \"${personaLeak.matches[0]}\". Artikel harus murni konten, tanpa tawaran/pertanyaan lanjutan dalam gaya asisten AI.`);\n}\n\nif (qualityGuards.hardFail) {\n  if (verdict === 'PASS') verdict = 'REVISE';\n  failedCategories = [...new Set([...failedCategories, 'articleQualityGuard'])];\n  topFixes.unshift('WAJIB: Hapus tabel Markdown, emoji, atau sisipan berlabel dari badan artikel.');\n}\nif (qualityGuards.openingMissing) failedCategories = [...new Set([...failedCategories, 'openingMissing'])];\nif (qualityGuards.closingMissing) failedCategories = [...new Set([...failedCategories, 'closingMissing'])];\n\n// BUG KRITIS ditemukan eksekusi 1001/1002 (2026-07-27): node ini sempat 2x kehilangan field `draft`\n// (sekali karena tidak pernah ada dari awal, sekali lagi karena ke-overwrite proses paralel lain).\n// Code: Check Retry Limit -> Code: Build AI Reviser Body BUTUH field ini -- JANGAN dihapus lagi.\nreturn [{ json: { draft, geoScore, verdict, breakdown, criticFailed, personaLeak, qualityGuards, failedCategories, critique: { topFixes } } }];"
+      },
+      "id": "node-30-compute-score",
+      "name": "Code: Compute GEO Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7712,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "pass",
+                    "leftValue": "={{ $json.verdict }}",
+                    "rightValue": "PASS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "revise",
+                    "leftValue": "={{ $json.verdict }}",
+                    "rightValue": "REVISE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "reject",
+                    "leftValue": "={{ $json.verdict }}",
+                    "rightValue": "REJECT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4bd72d9-d5fe-425c-a0d9-624372e871b5",
+      "name": "Switch - GEO Score Gate",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        6784,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst count = (d.reviseCount || 0) + 1;\nreturn [{ json: { ...d, reviseCount: count } }];"
+      },
+      "id": "node-32-check-retry",
+      "name": "Code: Check Retry Limit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8304,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "r1",
+              "leftValue": "={{ $json.reviseCount }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-33-retry-if",
+      "name": "If - Retry Available?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        8608,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst facts = $('Code: Normalize Research Payload').first().json?.facts || [];\nconst factsText = facts.map((f,i) => `${i+1}. ${f.claim} — ${f.sourceName}: ${f.sourceUrl}`).join('\\n');\nconst tf = (d.critique?.topFixes || []);\nconst topFixes = tf.length > 0 ? tf.join('\\n') : `Tidak ada perbaikan spesifik. Revisi kategori terendah: ${(d.failedCategories || []).join(', ')}`;\n\nconst prompt = `Perbaiki artikel sesuai daftar masalah di bawah. Bagian tak bermasalah jangan diubah. FAKTA: ${factsText || '(tidak ada)'}\n\nKATEGORI BERMASALAH: ${(d.failedCategories || []).join(', ')}\nYANG HARUS DIPERBAIKI:\n${topFixes}\n\nATURAN:\n1. Bagian TIDAK bermasalah harus dibiarkan APA ADANYA kata per kata.\n2. Jangan menambah klaim numerik baru.\n3. Jangan mengubah heading kecuali auditor menyoal heading.\n\n=== ARTIKEL ===\n${d.draft || ''}\n=== AKHIR ARTIKEL ===\n\nTULIS HASIL REVISI:`;\n\nconst wc = (d.draft || '').split(/\\s+/).length;\n// gpt-oss-120b @ OpenRouter + reasoning effort low: dites terminal 2026-07-27 -- taat 'biarkan bagian\n// tak bermasalah verbatim' bahkan di level kalimat, reasoning turun ke ~11% (vs deepseek-v4-flash-free\n// yang 90-95% reasoning dan sempat collapse total ke 2 token output di eksekusi 988)\nreturn [{ json: { _reviserBody: { model: 'openai/gpt-oss-120b', reasoning: { effort: 'low' }, messages: [{ role: 'system', content: 'Anda adalah editor. Tugas ANDA HANYA: menulis artikel markdown hasil revisi. DILARANG menulis instruksi, header SKOR/KATEGORI, atau teks apa pun selain artikel. Output ANDA selalu dimulai dengan heading ##.' }, { role: 'user', content: prompt }], max_tokens: Math.ceil(Math.max(wc, 300) * 2.2) + 4000, temperature: 0.5 } } }];"
+      },
+      "id": "node-34-reviser-body",
+      "name": "Code: Build AI Reviser Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8912,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._reviserBody }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "node-35-ai-reviser",
+      "name": "HTTP: AI Reviser",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        9200,
+        400
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oSM2yzrS4VtlyIcj",
+          "name": "OpenRouter Authorization - GPT OSS 120B"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = $json.choices?.[0]?.message?.content || $json.content || '';\ncontent = content.replace(/^```(?:markdown|md)?\\s*\\n?/i,'').replace(/\\n?```\\s*$/i,'');\nconst m = content.match(/^#{1,3}\\s/);\nif (m) content = content.substring(content.indexOf(m[0]));\ncontent = content.trim();\nif (!content || content.length < 100) throw new Error('Parse Revised Draft: too short');\nconst d = $('Code: Check Retry Limit').first().json;\nreturn [{ json: { draft: content, draftLength: content.length, reviseCount: d.reviseCount, geoScore: d.geoScore, failedCategories: d.failedCategories || [], critique: d.critique || {} } }];"
+      },
+      "id": "node-36-parse-revised",
+      "name": "Code: Parse Revised Draft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9504,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const draft = $('Code: Parse Draft').first().json.draft || '';\nconst ctx = $('Code: Build Run Context').first().json;\nconst outline = $('Code: Parse Outline').first().json;\nconst targetKeyword = outline?.resolvedTargetKeyword || ctx?.targetKeyword || '';\nconst cc = ctx?.contentContext || {};\nconst cats = cc.wordpress?.categories || [];\nconst tags = cc.wordpress?.tags || [];\nconst author = cc.author || {};\nconst today = new Date().toISOString().split('T')[0];\nconst language = ctx.language || 'Indonesia';\n\nconst catsText = cats.map(c => `${c.name} (id:${c.id})`).join(', ');\nconst tagsText = tags.map(t => t.name).join(', ');\n\nconst prompt = `BAHASA ARTIKEL: ${language}. Tulis title, metaDescription, excerpt, dan FAQ dalam Bahasa ${language}; jangan menerjemahkan istilah teknis tanpa padanan baku, nama resmi teori, atau kutipan verbatim.\\n\\nEkstrak metadata dari artikel berikut. Kamu hanya mengekstrak — jangan mengarang informasi yang tidak ada di artikel.\n\nARTIKEL:\n${draft}\n\nTARGET KEYWORD: ${targetKeyword}\nKATEGORI TERSEDIA: ${catsText}\nTAG TERSEDIA: ${tagsText}\nAUTHOR: ${JSON.stringify(author)}\nTANGGAL: ${today}\n\nATURAN:\n- title: maks 60 karakter, mengandung target keyword.\n- metaDescription: WAJIB 120–160 karakter. Hitung dengan teliti.\n- slug: huruf kecil, dipisah tanda hubung, maks 6 kata.\n- categories/tags: PILIH dari daftar yang tersedia. JANGAN membuat baru.\n- faqSchema: ambil dari section FAQ artikel, minimal 3 pasang Q&A.\n\nBalas HANYA JSON:\n{\n  \"title\": \"...\", \"metaDescription\": \"...\", \"slug\": \"...\",\n  \"categories\": [\"...\"], \"tags\": [\"...\"], \"excerpt\": \"<1–2 kalimat>\",\n  \"faqSchema\": [{\"question\": \"...\", \"answer\": \"...\"}]\n}`;\n\nreturn [{ json: { _schemaBody: { model: 'qwen2.5:7b-instruct-q4_K_M', messages: [{ role: 'system', content: 'Anda metadata extractor. Balas HANYA JSON valid.' }, { role: 'user', content: prompt }], format: 'json', stream: false, options: { temperature: 0.2, num_ctx: 8192, num_predict: 2000 } } } }];"
+      },
+      "id": "node-37-schema-body",
+      "name": "Code: Build AI Schema Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7200,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:11434/api/chat",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._schemaBody }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "node-38-ai-schema",
+      "name": "HTTP: AI Schema Generator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        7504,
+        608
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Code: Build Run Context').first().json;\nconst cc = ctx?.contentContext || {};\nconst today = new Date().toISOString().split('T')[0];\n\nfunction pj(v) { if (v && typeof v === 'object' && !Array.isArray(v)) return v; let t = String(v || '').replace(/```json?/gi,'').replace(/```/g,'').trim(); const s = t.indexOf('{'); const e = t.lastIndexOf('}'); if (s !== -1 && e !== -1 && e > s) t = t.substring(s, e + 1); try { return JSON.parse(t); } catch(e) { return null; } }\n\nconst raw = $json.message?.content || $json.choices?.[0]?.message?.content || '';\nlet meta = pj(raw);\nlet fallback = false;\n\nif (!meta || !meta.title) {\n  fallback = true;\n  const draft = $('Code: Parse Draft').first().json.draft || '';\n  const h1m = draft.match(/^# (.+)/m);\n  const title = h1m ? h1m[1].trim().substring(0, 60) : (cc.site?.name || 'Untitled');\n  const firstPara = (draft.split('\\n\\n').filter(p => p.trim().length > 50)[0] || '').replace(/#{1,3}\\s/g,'').replace(/\\*\\*|__/g,'').trim();\n  const md = firstPara.length > 160 ? firstPara.substring(0, 157) + '...' : (firstPara.length < 120 ? firstPara + ' Baca selengkapnya di artikel ini untuk memahami topik lebih dalam.' : firstPara);\n  const s = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-+|-+$/g,'').substring(0, 75);\n  meta = { title, metaDescription: md.substring(0, 160), slug: s, categories: [], tags: [], excerpt: md.substring(0, 160), faqSchema: [] };\n}\n\nif (!meta.metaDescription || meta.metaDescription.length < 120 || meta.metaDescription.length > 160) {\n  const draft = $('Code: Parse Draft').first().json.draft || '';\n  const firstPara = (draft.split('\\n\\n').filter(p => p.trim().length > 50)[0] || '').replace(/#{1,3}\\s/g,'').replace(/\\*\\*|__/g,'').trim();\n  if (firstPara.length >= 120 && firstPara.length <= 160) meta.metaDescription = firstPara;\n  else meta.metaDescription = firstPara.length > 160 ? firstPara.substring(0, 157) + '...' : (firstPara + ' Baca selengkapnya.').substring(0, 160);\n}\n\nconst jsonLd = { '@context': 'https://schema.org', '@graph': [{ '@type': 'BlogPosting', headline: meta.title, description: meta.metaDescription, datePublished: today, dateModified: today, author: { '@type': 'Person', name: cc.author?.name || '', jobTitle: cc.author?.jobTitle || '', url: cc.author?.url || '' }, publisher: { '@type': 'Organization', name: cc.site?.name || '', url: cc.site?.url || '' }, mainEntityOfPage: { '@type': 'WebPage', '@id': `${cc.site?.url || ''}/${meta.slug}` } }] };\n\nif (meta.faqSchema && Array.isArray(meta.faqSchema) && meta.faqSchema.length >= 3) {\n  jsonLd['@graph'].push({ '@type': 'FAQPage', mainEntity: meta.faqSchema.map(f => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } })) });\n}\n\nreturn [{ json: { meta, jsonLd, fallback, _schemaOk: !fallback } }];"
+      },
+      "id": "node-39-parse-schema",
+      "name": "Code: Parse and Validate Schema",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7808,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst meta = d.meta || {};\nconst jsonLd = d.jsonLd || {};\nconst slug = meta.slug || '';\n\nfunction scoreMetadata(schemaJson, metaDescription, slug) {\n  let score = 0; const issues = [];\n  try {\n    const s = typeof schemaJson === 'string' ? JSON.parse(schemaJson) : schemaJson;\n    const graph = s['@graph'] || [s];\n    const article = graph.find(x => /Article|BlogPosting/i.test(x['@type'] || ''));\n    if (!article) issues.push('tidak ada node Article/BlogPosting');\n    else {\n      const required = ['headline', 'datePublished', 'author'];\n      const missing = required.filter(f => !article[f]);\n      score += missing.length === 0 ? 3 : Math.max(0, 3 - missing.length);\n      if (missing.length) issues.push('Article kurang field: ' + missing.join(', '));\n    }\n    const faq = graph.find(x => /FAQPage/i.test(x['@type'] || ''));\n    if (faq && Array.isArray(faq.mainEntity) && faq.mainEntity.length >= 3) score += 2;\n    else issues.push('FAQPage schema tidak ada atau kurang dari 3');\n  } catch (e) { issues.push('JSON-LD tidak bisa di-parse: ' + e.message); }\n  const len = (metaDescription || '').trim().length;\n  if (len >= 120 && len <= 160) score += 3;\n  else if (len >= 100 && len <= 175) score += 1.5;\n  else issues.push(`meta description ${len} char (target 120-160)`);\n  if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug || '') && (slug || '').length <= 75) score += 2;\n  else issues.push('slug tidak bersih atau terlalu panjang');\n  return { score: Math.min(score, 10), issues };\n}\n\nconst m = scoreMetadata(jsonLd, meta.metaDescription || '', slug);\nconst pct = Math.round((m.score / 10) * 100);\n\n// if pct < 70 and fallback already used, just pass through\n// (fallback was already applied in node 39)\nif (pct < 70 && !d.fallback) {\n  // trigger would go here — but node 39 already handles fallback\n  // just flag it\n  m.issues.push('metadata score below 70 — fallback should have been applied in node 39');\n}\n\nreturn [{ json: { ...d, metadataScore: m.score, metadataPct: pct, metadataIssues: m.issues } }];"
+      },
+      "id": "node-39b-metadata-rules",
+      "name": "Code: Validate Metadata Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8112,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meta = $input.first().json.meta || {};\n\nconst contentHtml = $('Code: Markdown to WordPress HTML').first().json._wpHtml || '';\nconst ctx = $('Code: Build Run Context').first().json;\nconst wp = (ctx?.contentContext || {}).wordpress || {};\nconst cats = wp.categories || [];\nconst tags = wp.tags || [];\nconst defaultCatId = wp.defaultCategoryId || 1;\nconst status = ctx.publishMode === 'Live Run - Publish' ? 'publish' : 'draft';\n\nconst norm = (s) => (s || '').toLowerCase().trim();\nconst selectedCats = (meta.categories || []).map(n => { const f = cats.find(c => norm(c.name) === norm(n)); return f ? f.id : null; }).filter(Boolean);\nconst selectedTags = (meta.tags || []).map(n => { const f = tags.find(t => norm(t.name) === norm(n)); return f ? f.name : n; });\n\n\nconst content = contentHtml;\n\nreturn [{ json: { _wpPayload: { title: meta.title || 'Untitled', content, excerpt: meta.excerpt || meta.metaDescription || '', slug: meta.slug || '', status, categories: selectedCats.length > 0 ? selectedCats : [defaultCatId], tags: selectedTags.join(','), format: 'standard' } } }];"
+      },
+      "id": "node-40-wp-payload",
+      "name": "Code: Build WordPress Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8464,
+        784
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://public-api.wordpress.com/rest/v1.1/sites/satryapudja.wordpress.com/posts/new",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._wpPayload }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-41-wp-create",
+      "name": "HTTP: WordPress Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        8896,
+        688
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "oAuth2Api": {
+          "id": "q0ZOvF43b2FlIsLj",
+          "name": "WordpressApi"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json;\nconst url = r.URL || r.url || r.link || '';\nconst postId = r.ID || r.id || r.post_id || '';\nreturn [{ json: { wpUrl: url, wpPostId: postId, wpPublished: !!url, wpStatus: r.status || 'unknown' } }];"
+      },
+      "id": "node-42-wp-extract",
+      "name": "Code: Extract WP Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9168,
+        608
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "node-retry-exceeded",
+      "name": "NoOp - Retry Exceeded",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        8608,
+        608
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "node-reject-noop",
+      "name": "NoOp - Score Rejected",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        6800,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Code: Build Run Context').first().json;\nconst sl = ctx.sourceLanguage || null;\nlet slInst = '';\nif (sl === 'International') slInst = '\\nSUMBER: Prioritaskan internasional/akademik.';\nelse if (sl === 'Force Indonesia') slInst = '\\nSUMBER: Pakai sumber Indonesia.';\nelse if (sl === 'Bilingual') slInst = '\\nSUMBER: Campur internasional + Indonesia.';\n\nconst prompt = `Kamu concept strategist untuk artikel deep-dive filsafat/psikologi. Analisis topik, buat concept brief argumentatif.${slInst}\n\nTOPIK: ${ctx.topic}\nDETAIL: ${ctx.topicDetail || ''}\nENTITAS: ${ctx.keyEntitiesSeed || ''}\n\nATURAN:\n- Pilih tepat satu argumentPattern: REVERSAL, ESCALATION, atau DIALECTIC. Pilih berdasarkan topik, bukan default.\n- patternRationale wajib menjelaskan kenapa pola itu cocok.\n- expectedInsight wajib menyatakan wawasan akhir yang tidak dapat ditebak hanya dari judul.\n- REVERSAL: intuisi awal -> keterbatasan -> kerangka pengganti.\n- ESCALATION: kasus sederhana -> kasus makin sulit -> batas tesis.\n- DIALECTIC: dua penjelasan kuat -> uji/sintesis atau batas yang tidak dapat didamaikan.\n- thinkers[].work: HANYA kalau yakin; ragu -> null.\n- empiricalClaims: HANYA klaim butuh angka/data kontemporer. Pengetahuan kanonik JANGAN masuk sini.\n- needsResearch: true HANYA kalau empiricalClaims tidak kosong.\n- DILARANG menulis kutipan verbatim.\n- Keluarkan primarySources[] berisi karya primer/kanonik yang relevan secara konseptual, tanpa web search, dengan title, author, year, dan relevance.\n\nBalas HANYA JSON:\n{\"coreQuestion\":\"...\",\"argumentPattern\":\"REVERSAL|ESCALATION|DIALECTIC\",\"patternRationale\":\"...\",\"expectedInsight\":\"...\",\"primarySources\":[{\"title\":\"...\",\"author\":\"...\",\"year\":2020,\"relevance\":\"...\"}],\"thinkers\":[{\"name\":\"...\",\"position\":\"...\",\"work\":null}],\"keyConcepts\":[{\"term\":\"...\",\"definition\":\"...\",\"contrastWith\":null}],\"debates\":[{\"claim\":\"...\",\"counterClaim\":\"...\"}],\"angle\":\"...\",\"sectionSeeds\":[{\"question\":\"...\",\"evidenceType\":\"conceptual\"}],\"empiricalClaims\":[{\"claim\":\"...\",\"whyNeeded\":\"...\",\"searchQuery\":\"...\"}],\"needsResearch\":false,\"commonQuestions\":[\"...\"]}`;\n\nreturn [{ json: { _conceptBody: { model: 'gpt-5.4-nano', messages: [{ role: 'system', content: 'Anda concept strategist. Balas HANYA JSON valid.' }, { role: 'user', content: prompt }], max_tokens: 4500, temperature: 0.4, response_format: { type: 'json_object' } } } }];"
+      },
+      "id": "node-concept-brief-body",
+      "name": "Code: Build Concept Brief Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2608,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Code: Build Run Context').first().json;\nconst rm = ctx.researchMode || 'Auto';\nconst raw = $json.choices?.[0]?.message?.content || '';\nfunction pj(v) { if (v && typeof v === 'object' && !Array.isArray(v)) return v; let t = String(v || '').replace(/```json?/gi,'').replace(/```/g,'').trim(); const s = t.indexOf('{'); const e = t.lastIndexOf('}'); if (s !== -1 && e !== -1 && e > s) t = t.substring(s, e + 1); try { return JSON.parse(t); } catch(e) { return null; } }\nconst b = pj(raw);\nconst patterns = ['REVERSAL', 'ESCALATION', 'DIALECTIC'];\nif (!b || !b.coreQuestion || !Array.isArray(b.sectionSeeds) || b.sectionSeeds.length === 0) throw new Error('Parse Concept Brief: invalid');\nif (!patterns.includes(b.argumentPattern) || !String(b.patternRationale || '').trim()) throw new Error('Parse Concept Brief: missing argument pattern contract');\nif (!String(b.expectedInsight || '').trim()) throw new Error('Parse Concept Brief: missing expectedInsight');\nb.needsResearch = rm === 'Force Research' || (rm !== 'Concept Only' && b.needsResearch === true && (b.empiricalClaims || []).length > 0);\nb.isConceptOnly = rm === 'Concept Only';\nb.researchMode = rm;\nreturn [{ json: b }];"
+      },
+      "id": "node-parse-concept-brief",
+      "name": "Code: Parse Concept Brief",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "nr",
+              "leftValue": "={{ $json.needsResearch }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-need-emp",
+      "name": "If - Need Empirical Data?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3504,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst cb = d.coreQuestion ? d : ($('Code: Parse Concept Brief').first().json || {});\nconst facts = Array.isArray(d.facts) ? d.facts : [];\nconst cq = Array.isArray(d.commonQuestions) ? d.commonQuestions : (Array.isArray(cb.commonQuestions) ? cb.commonQuestions : []);\nconst ent = Array.isArray(d.entities) ? d.entities : ((cb.thinkers || []).map(t => t.name));\nconst researchRan = facts.length > 0;\nreturn [{ json: { facts, commonQuestions: cq, entities: ent, conceptBrief: cb, researchRan } }];"
+      },
+      "id": "node-normalize-research",
+      "name": "Code: Normalize Research Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3504,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const draft = $input.first().json;\nconst quotes = draft.quotes || [];\nconst citations = draft.citations || [];\n\nif (quotes.length === 0 && citations.length === 0) {\n  return [{ json: { ...draft, verifiedQuotes: [], verifiedCitations: [] } }];\n}\n\nconst verifiedQuotes = [];\nfor (const q of quotes) {\n  let verified = false;\n  try {\n    const gb = await this.helpers.httpRequest({\n      method: 'GET',\n      url: 'https://www.googleapis.com/books/v1/volumes',\n      qs: { q: `\"${q.text}\"`, key: 'AIzaSyBudv2oFhcH-qWRTDvKW2BUE-HvYSOTUsc' },\n      json: true\n    });\n    verified = (gb.totalItems || 0) > 0;\n  } catch (e) { /* lanjut ke fallback */ }\n  if (!verified) {\n    try {\n      const wq = await this.helpers.httpRequest({\n        method: 'GET',\n        url: 'https://en.wikiquote.org/w/api.php',\n        qs: { action: 'query', list: 'search', srsearch: `\"${q.text}\"`, format: 'json' },\n        json: true\n      });\n      verified = (wq.query?.search || []).length > 0;\n    } catch (e) { /* tetap false */ }\n  }\n  verifiedQuotes.push({ ...q, verified });\n}\n\nconst verifiedCitations = [];\nfor (const c of citations) {\n  let verified = false;\n  try {\n    if (c.type === 'book') {\n      const ol = await this.helpers.httpRequest({\n        method: 'GET',\n        url: 'https://openlibrary.org/search.json',\n        qs: { title: c.title, author: c.author || '' },\n        json: true\n      });\n      verified = (ol.numFound || 0) > 0;\n    } else {\n      const ss = await this.helpers.httpRequest({\n        method: 'GET',\n        url: 'https://api.semanticscholar.org/graph/v1/paper/search',\n        qs: { query: c.title, fields: 'title,authors,year', limit: 3 },\n        headers: { 'x-api-key': 's2k-menKi9N7RROfJsHEJ8JG9fu6W5JGeBNtHYwaZUFx' },\n        json: true\n      });\n      verified = (ss.total || 0) > 0;\n    }\n  } catch (e) { /* tetap false */ }\n  verifiedCitations.push({ ...c, verified });\n}\n\nreturn [{ json: { ...draft, verifiedQuotes, verifiedCitations } }];"
+      },
+      "id": "node-verify-quotes",
+      "name": "Code: Verify Quotes And Citations",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6400,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nlet draftMd = d.draft || d.draftMd || '';\nconst unverified = [\n  ...(d.verifiedQuotes || []).filter(q => !q.verified).map(q => q.text),\n  ...(d.verifiedCitations || []).filter(c => !c.verified).map(c => c.title)\n];\nconst WARNING = '\\n\\n> ⚠️ **[PERLU CEK MANUAL]** Kutipan/sitasi di bawah ini tidak ditemukan lewat verifikasi otomatis — mohon cek keasliannya sebelum publish.\\n\\n';\nfor (const text of unverified) {\n  const idx = draftMd.indexOf(text);\n  if (idx !== -1) {\n    draftMd = draftMd.slice(0, idx) + WARNING + draftMd.slice(idx);\n  }\n}\nreturn [{ json: { ...d, draft: draftMd } }];"
+      },
+      "id": "node-annotate-draft",
+      "name": "Code: Annotate Draft With Warnings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6608,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._conceptBody }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-http-concept-brief",
+      "name": "HTTP: AI Concept Brief",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2912,
+        112
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "oSM2yzrS4VtlyIcj",
+          "name": "OpenRouter Authorization - GPT OSS 120B"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "run-mode-test",
+              "leftValue": "={{ $('Code: Build Run Context').first().json.publishMode }}",
+              "rightValue": "Test",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-test-mode",
+      "name": "If - Is Test Mode?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        8256,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Topic blocked",
+        "completionMessage": "={{ 'Topik ini tidak dapat diproses. Alasan: ' + ($json.guard_reason || 'Tidak memenuhi kebijakan konten.') }}",
+        "options": {}
+      },
+      "id": "node-15-topic-blocked-form",
+      "name": "Form: Topic Blocked",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        2304,
+        608
+      ],
+      "webhookId": "b4fd55a0-38a4-40eb-90af-32347889dfb7"
+    },
+    {
+      "parameters": {
+        "jsCode": "let validated = {};\ntry { validated = $('Code: Validate Metadata Rules').first().json || {}; } catch (e) {}\n\nlet draft = '';\ntry { draft = $('Code: Parse Draft').first().json?.draft || ''; } catch (e) { draft = $input.first().json?.draft || ''; }\n\nconst ctx = $('Code: Build Run Context').first().json || {};\nconst score = (() => { try { return $('Code: Compute GEO Score').first().json || {}; } catch (e) { return {}; } })();\nconst meta = validated.meta || {};\n\nlet wpSection = 'WordPress: not published';\ntry {\n  const wp = $('Code: Extract WP Result').first().json || {};\n  wpSection = `WordPress Post ID: ${wp.wpPostId || ''} — URL: ${wp.wpUrl || ''} — Status: ${wp.wpStatus || 'unknown'}`;\n} catch (e) {}\n\nconst isRejected = score.verdict === 'REJECT';\nconst isRetryExceeded = !score.verdict;\nlet statusNote = '';\nif (isRejected) statusNote = '<p><strong>STATUS: REJECTED</strong> — artikel tidak lolos skor minimum, TIDAK dipublish ke WordPress.</p>';\nif (isRetryExceeded) statusNote = '<p><strong>STATUS: RETRY EXCEEDED</strong> — revisi habis, tetap di bawah threshold, TIDAK dipublish ke WordPress.</p>';\n\nfunction escapeHtml(s) {\n  return String(s || '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;');\n}\n\nfunction inlineFormat(text) {\n  let out = escapeHtml(text);\n  out = out.replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>');\n  out = out.replace(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g, '<a href=\"$2\">$1</a>');\n  return out;\n}\n\nfunction convertTable(lines) {\n  const rows = lines.map(l => l.trim().replace(/^\\||\\|$/g, '').split('|').map(c => c.trim()));\n  const header = rows[0];\n  const bodyRows = rows.slice(2);\n  let html = '<table><tr>' + header.map(h => `<th>${inlineFormat(h)}</th>`).join('') + '</tr>';\n  for (const r of bodyRows) {\n    html += '<tr>' + r.map(c => `<td>${inlineFormat(c)}</td>`).join('') + '</tr>';\n  }\n  html += '</table>';\n  return html;\n}\n\nfunction convertMarkdownToHtml(md) {\n  const lines = md.split('\\n');\n  let html = '';\n  let i = 0;\n  let listBuffer = [];\n  let listType = null;\n\n  function flushList() {\n    if (listBuffer.length) {\n      html += `<${listType}>` + listBuffer.map(li => `<li>${inlineFormat(li)}</li>`).join('') + `</${listType}>`;\n      listBuffer = [];\n      listType = null;\n    }\n  }\n\n  while (i < lines.length) {\n    const line = lines[i];\n    const trimmed = line.trim();\n\n    if (!trimmed) { flushList(); i++; continue; }\n\n    let m;\n    if ((m = trimmed.match(/^####\\s+(.+)/))) { flushList(); html += `<h4>${inlineFormat(m[1])}</h4>`; i++; continue; }\n    if ((m = trimmed.match(/^###\\s+(.+)/))) { flushList(); html += `<h3>${inlineFormat(m[1])}</h3>`; i++; continue; }\n    if ((m = trimmed.match(/^##\\s+(.+)/))) { flushList(); html += `<h2>${inlineFormat(m[1])}</h2>`; i++; continue; }\n    if ((m = trimmed.match(/^#\\s+(.+)/))) { flushList(); html += `<h1>${inlineFormat(m[1])}</h1>`; i++; continue; }\n\n    if ((m = trimmed.match(/^>\\s?(.*)/))) { flushList(); html += `<blockquote>${inlineFormat(m[1])}</blockquote>`; i++; continue; }\n\n    if (trimmed.startsWith('|') && lines[i + 1] && /^\\s*\\|[\\s:|-]+\\|\\s*$/.test(lines[i + 1])) {\n      flushList();\n      const tableLines = [trimmed, lines[i + 1].trim()];\n      let j = i + 2;\n      while (j < lines.length && lines[j].trim().startsWith('|')) { tableLines.push(lines[j].trim()); j++; }\n      html += convertTable(tableLines);\n      i = j;\n      continue;\n    }\n\n    if ((m = trimmed.match(/^[-*+]\\s+(.+)/))) {\n      if (listType !== 'ul') { flushList(); listType = 'ul'; }\n      listBuffer.push(m[1]);\n      i++;\n      continue;\n    }\n\n    if ((m = trimmed.match(/^\\d+\\.\\s+(.+)/))) {\n      if (listType !== 'ol') { flushList(); listType = 'ol'; }\n      listBuffer.push(m[1]);\n      i++;\n      continue;\n    }\n\n    flushList();\n    html += `<p>${inlineFormat(trimmed)}</p>`;\n    i++;\n  }\n  flushList();\n  return html;\n}\n\nconst articleHtml = convertMarkdownToHtml(draft);\nconst faqSchemaJson = escapeHtml(JSON.stringify(meta.faqSchema || [], null, 2));\n\nconst fullHtml = `<html><body>\n<h1>${inlineFormat(meta.title || ctx.topic || '(tanpa judul)')}</h1>\n<p><em>${escapeHtml(ctx.topic || '')} — Run ID ${escapeHtml(ctx.runId || '')} — Run Mode ${escapeHtml(ctx.publishMode || '')}</em></p>\n${statusNote}\n<p>Meta Description: ${escapeHtml(meta.metaDescription || '')}</p>\n<p>Slug: ${escapeHtml(meta.slug || '')} | Kategori: ${escapeHtml((meta.categories || []).join(', '))} | Tags: ${escapeHtml((meta.tags || []).join(', '))}</p>\n<p>GEO Score: ${score.geoScore ?? 'N/A'}/100 — Verdict: ${escapeHtml(score.verdict || 'N/A')}</p>\n<p>${escapeHtml(wpSection)}</p>\n<hr>\n${articleHtml}\n<hr>\n<h3>FAQ Schema (raw JSON)</h3>\n<pre>${faqSchemaJson}</pre>\n</body></html>`;\n\nconst safeMode = String(ctx.publishMode || 'run').replace(/\\s+/g, '-');\nconst docName = `${ctx.runId || Date.now()}_${safeMode} - ${meta.title || ctx.topic || 'untitled'}`;\n\nreturn [{ json: { fullHtml, docName } }];"
+      },
+      "id": "node-43-export-payload",
+      "name": "Code: Convert Draft to HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9488,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst boundary = 'geo_builder_' + Date.now();\nconst metadata = JSON.stringify({ name: d.docName, mimeType: 'application/vnd.google-apps.document' });\n\nconst rawBody =\n  `--${boundary}\\r\\n` +\n  `Content-Type: application/json; charset=UTF-8\\r\\n\\r\\n` +\n  `${metadata}\\r\\n` +\n  `--${boundary}\\r\\n` +\n  `Content-Type: text/html; charset=UTF-8\\r\\n\\r\\n` +\n  `${d.fullHtml}\\r\\n` +\n  `--${boundary}--`;\n\nreturn [{ json: { rawBody, boundary, docName: d.docName } }];"
+      },
+      "id": "e00b39f8-378f-4849-94d2-5d68c1744a81",
+      "name": "Code: Build Drive Upload Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10096,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "={{ 'multipart/related; boundary=' + $json.boundary }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "={{ 'multipart/related; boundary=' + $json.boundary }}",
+        "body": "={{ $json.rawBody }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "d88f7763-8f56-44bc-b771-7847a517f22a",
+      "name": "HTTP: Upload to Google Docs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        10400,
+        608
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Ty7CtZaeZuh0L4ce",
+          "name": "Google Drive OAuth2 - GEO Article Builder"
+        }
+      }
+    },
+    {
+      "id": "node-40-markdown-wp-html",
+      "name": "Code: Markdown to WordPress HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8304,
+        784
+      ],
+      "parameters": {
+        "jsCode": "const draft = $('Code: Parse Draft').first().json?.draft || '';\nconst warnings = [];\nfunction esc(v) { return String(v || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;'); }\nfunction inline(v) { return esc(v).replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>').replace(/\\*([^*]+)\\*/g,'<em>$1</em>').replace(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g,'<a href=\"$2\">$1</a>'); }\nfunction cells(v) { return v.trim().replace(/^\\||\\|$/g,'').split('|').map(x => x.trim()).filter(Boolean); }\nfunction convert(md) {\n  const lines = String(md).split(/\\r?\\n/), out = [];\n  let paragraph = [], list = null;\n  const flushParagraph = () => { if (paragraph.length) { out.push(`<p>${inline(paragraph.join(' '))}</p>`); paragraph = []; } };\n  const flushList = () => { if (list) { out.push(`<${list.type}>${list.items.map(x => `<li>${inline(x)}</li>`).join('')}</${list.type}>`); list = null; } };\n  for (let i = 0; i < lines.length; i++) {\n    const line = lines[i].trim();\n    if (!line) { flushParagraph(); flushList(); continue; }\n    if (line === '---METADATA---') break;\n    if (line.startsWith('|') && lines[i + 1] && /^\\s*\\|[\\s:|-]+\\|\\s*$/.test(lines[i + 1])) {\n      flushParagraph(); flushList(); warnings.push('Markdown table removed by WordPress renderer');\n      const rows = [line, lines[++i].trim()]; while (i + 1 < lines.length && lines[i + 1].trim().startsWith('|')) rows.push(lines[++i].trim());\n      const text = rows.filter(x => !/^\\s*\\|[\\s:|-]+\\|\\s*$/.test(x)).map(x => cells(x).join(' - ')).join('. ');\n      if (text) out.push(`<p>${inline(text)}</p>`); continue;\n    }\n    let m;\n    if ((m = line.match(/^###\\s+(.+)/))) { flushParagraph(); flushList(); out.push(`<h3>${inline(m[1])}</h3>`); continue; }\n    if ((m = line.match(/^##\\s+(.+)/))) { flushParagraph(); flushList(); out.push(`<h2>${inline(m[1])}</h2>`); continue; }\n    if ((m = line.match(/^#\\s+(.+)/))) { flushParagraph(); flushList(); warnings.push('Markdown H1 omitted; WordPress title is the H1'); continue; }\n    if ((m = line.match(/^>\\s?(.*)/))) { flushParagraph(); flushList(); out.push(`<blockquote><p>${inline(m[1])}</p></blockquote>`); continue; }\n    if ((m = line.match(/^[-*+]\\s+(.+)/))) { flushParagraph(); if (!list || list.type !== 'ul') { flushList(); list = {type:'ul',items:[]}; } list.items.push(m[1]); continue; }\n    if ((m = line.match(/^\\d+\\.\\s+(.+)/))) { flushParagraph(); if (!list || list.type !== 'ol') { flushList(); list = {type:'ol',items:[]}; } list.items.push(m[1]); continue; }\n    flushList(); paragraph.push(line);\n  }\n  flushParagraph(); flushList(); return out.join('\\n');\n}\nreturn [{json:{_wpHtml:convert(draft),_wpRenderWarnings:warnings}}];"
+      }
+    },
+    {
+      "id": "cp021-build-article-api-payload",
+      "name": "Code: Build Article API Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8464,
+        960
+      ],
+      "parameters": {
+        "jsCode": "const validated = $('Code: Validate Metadata Rules').first().json || {};\nconst ctx = $('Code: Build Run Context').first().json || {};\nconst score = $('Code: Compute GEO Score').first().json || {};\nconst meta = validated.meta || {};\nconst content = $('Code: Markdown to WordPress HTML').first().json?._wpHtml || '';\n\nfunction slugify(value) {\n  return String(value || '').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');\n}\n\nconst slug = slugify(meta.slug || meta.title);\nconst category = Array.isArray(meta.categories) ? meta.categories[0] : '';\nconst tags = Array.isArray(meta.tags) ? meta.tags : [];\nconst faqSchema = Array.isArray(meta.faqSchema) ? meta.faqSchema : null;\nconst status = ctx.publishMode === 'Live Run - Publish' ? 'published' : 'draft';\n\nif (!slug || !meta.title || !content || !meta.metaDescription || !category || tags.length === 0) {\n  throw new Error('Article API payload: required field missing after metadata validation');\n}\n\nreturn [{ json: { _articleApiPayload: { slug, title: meta.title, content, meta_description: meta.metaDescription, category, tags, faq_schema: faqSchema, status, geo_score: Number(score.geoScore ?? 0) } } }];"
+      },
+      "disabled": false
+    },
+    {
+      "id": "cp021-create-article",
+      "name": "HTTP: Create Article (satryapudja.site API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        8896,
+        960
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8787/api/articles",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $json._articleApiPayload }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mEcLTTQxkyTWhlNa",
+          "name": "Satryapudja Article API - X-API-Key"
+        }
+      },
+      "disabled": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "cp021-extract-article-result",
+      "name": "Code: Extract Article API Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9168,
+        960
+      ],
+      "parameters": {
+        "jsCode": "const result = $input.first().json || {};\nconst slug = result.slug || '';\nreturn [{ json: { articleId: result.id || '', articleSlug: slug, articleTitle: result.title || '', articleStatus: result.status || '', articleUrl: slug ? `https://satryapudja.site/artikel/${slug}/` : '', articleUrlNote: '(mode uji lokal — situs publik belum live)' } }];"
+      },
+      "disabled": false
+    },
+    {
+      "id": "cp021-build-failure-context",
+      "name": "Code: Build Failure Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9168,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "const failure = $input.first().json || {};\nconst ctx = $('Code: Build Run Context').first().json || {};\nconst error = failure.error || failure;\nconst message = String(error.message || failure.message || 'Unknown Article API error');\nconst statusCode = error.httpCode || error.statusCode || failure.statusCode || '';\nconst runId = ctx.runId || '';\nconst topic = ctx.topic || '';\nconst failureMessage = `CP021 Article API gagal\\nRun ID: ${runId}\\nTopik: ${topic}\\nHTTP: ${statusCode || 'unknown'}\\nError: ${message}`;\nreturn [{ json: { run_id: runId, topic, status: 'failed', error_code: statusCode, error_message: message, api_base_url: 'http://127.0.0.1:8787', created_at: new Date().toISOString(), failureMessage } }];"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "cp021-mark-topic-failed",
+      "name": "Google Sheets: Mark Topic Failed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        9488,
+        1056
+      ],
+      "parameters": {
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1TuezG43j45nXBrL-KRq_n-srMZyw_832YBvszmLveuo"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "article_log"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OvZoOWeznFSWBvuV",
+          "name": "Google Sheets OAuth2 - IG Content Builder"
+        }
+      }
+    },
+    {
+      "id": "cp021-telegram-alert",
+      "name": "Telegram - Operational Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        9488,
+        1184
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8675308460",
+        "text": "={{ $json.failureMessage }}"
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "CQbwRmBqoj3j86Jf",
+          "name": "Telegram Bot - IG Content Builder"
+        }
+      },
+      "webhookId": "b557cea6-7dbb-496d-ad74-20b25864a046"
+    }
+  ],
+  "connections": {
+    "Form Trigger - Manual Run": {
+      "main": [
+        [
+          {
+            "node": "Code: Set Form Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Set Form Run Context": {
+      "main": [
+        [
+          {
+            "node": "Code: Load Content Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Load Content Context": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Run Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Run Context": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Safety Guard Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Safety Guard Body": {
+      "main": [
+        [
+          {
+            "node": "AI Safety Guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Safety Guard": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Guard Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse Guard Result",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Guard Result": {
+      "main": [
+        [
+          {
+            "node": "If - Topic Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build AI Research Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI Researcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build AI Writer Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI Researcher": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse Research",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Research": {
+      "main": [
+        [
+          {
+            "node": "Code: Validate Research Facts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build AI Outline Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI Outline Planner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI Outline Planner": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse Outline",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI Writer": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse Draft",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Outline": {
+      "main": [
+        [
+          {
+            "node": "Code: Build AI Writing Planner Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build AI Writing Planner Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI Writing Planner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI Writing Planner": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Planner Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse Planner Result",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Planner Result": {
+      "main": [
+        [
+          {
+            "node": "Code: Build AI Writer Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: GEO Rule Checker": {
+      "main": [
+        [
+          {
+            "node": "Code: Build AI Critic Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build AI Critic Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI GEO Critic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI GEO Critic": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Critique",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse Critique",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Critique": {
+      "main": [
+        [
+          {
+            "node": "Code: Compute GEO Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Compute GEO Score": {
+      "main": [
+        [
+          {
+            "node": "Switch - GEO Score Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - GEO Score Gate": {
+      "main": [
+        [
+          {
+            "node": "Code: Build AI Schema Body",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code: Check Retry Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NoOp - Score Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Check Retry Limit": {
+      "main": [
+        [
+          {
+            "node": "If - Retry Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Retry Available?": {
+      "main": [
+        [
+          {
+            "node": "Code: Build AI Reviser Body",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NoOp - Retry Exceeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build AI Reviser Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI Reviser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI Reviser": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Revised Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse Revised Draft",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Revised Draft": {
+      "main": [
+        [
+          {
+            "node": "Code: GEO Rule Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build AI Schema Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI Schema Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI Schema Generator": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse and Validate Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Parse and Validate Schema",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse and Validate Schema": {
+      "main": [
+        [
+          {
+            "node": "Code: Validate Metadata Rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build WordPress Payload": {
+      "main": [
+        [
+          {
+            "node": "HTTP: WordPress Create Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: WordPress Create Post": {
+      "main": [
+        [
+          {
+            "node": "Code: Extract WP Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Concept Brief": {
+      "main": [
+        [
+          {
+            "node": "If - Need Empirical Data?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Need Empirical Data?": {
+      "main": [
+        [
+          {
+            "node": "Code: Build AI Research Body",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code: Normalize Research Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Validate Research Facts": {
+      "main": [
+        [
+          {
+            "node": "Code: Normalize Research Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Normalize Research Payload": {
+      "main": [
+        [
+          {
+            "node": "Code: Build AI Outline Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse Draft": {
+      "main": [
+        [
+          {
+            "node": "Code: Verify Quotes And Citations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Verify Quotes And Citations": {
+      "main": [
+        [
+          {
+            "node": "Code: Annotate Draft With Warnings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Annotate Draft With Warnings": {
+      "main": [
+        [
+          {
+            "node": "Code: GEO Rule Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Concept Brief Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: AI Concept Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: AI Concept Brief": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse Concept Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Validate Metadata Rules": {
+      "main": [
+        [
+          {
+            "node": "If - Is Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Topic Allowed?": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Concept Brief Body",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Form: Topic Blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Is Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Code: Convert Draft to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code: Markdown to WordPress HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Extract WP Result": {
+      "main": [
+        [
+          {
+            "node": "Code: Convert Draft to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NoOp - Score Rejected": {
+      "main": [
+        [
+          {
+            "node": "Code: Convert Draft to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NoOp - Retry Exceeded": {
+      "main": [
+        [
+          {
+            "node": "Code: Convert Draft to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Convert Draft to HTML": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Drive Upload Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Drive Upload Body": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Upload to Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Markdown to WordPress HTML": {
+      "main": [
+        [
+          {
+            "node": "Code: Build WordPress Payload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code: Build Article API Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Article API Payload": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Create Article (satryapudja.site API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Create Article (satryapudja.site API)": {
+      "main": [
+        [
+          {
+            "node": "Code: Extract Article API Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Code: Build Failure Context",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Failure Context": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Operational Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "error": [
+        [
+          {
+            "node": "Google Sheets: Mark Topic Failed",
+            "type": "error",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "1f4b839c-cd03-4e98-a81e-238371ba845c",
+  "activeVersionId": null,
+  "versionCounter": 178,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-07-26T00:25:56.918Z",
+      "createdAt": "2026-07-26T00:25:56.918Z",
+      "role": "workflow:owner",
+      "workflowId": "rwIbdIkIhoVE8nkG",
+      "projectId": "SDJZvhkKyGASLfUp",
+      "project": {
+        "updatedAt": "2026-06-03T08:26:12.549Z",
+        "createdAt": "2026-06-03T08:25:22.739Z",
+        "id": "SDJZvhkKyGASLfUp",
+        "name": "gede igedesatrya@gmail.com <igedesatrya@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "2cf67ba4-8c0c-4fef-9a4e-8f58356e0d43"
+      }
+    }
+  ],
+  "tags": []
+}
