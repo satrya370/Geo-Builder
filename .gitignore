@@ -1,0 +1,16 @@
+# Local credentials and secrets
+Credential_information.md
+ai_docs/001_verifikasi-medium-token_log.md
+ai_docs/004_researcher-outline-writer_report.md
+ai_docs/016_citation-quote-verification_log.md
+ai_docs/018_google-docs-export_log.md
+
+# Local/runtime artifacts
+.playwright-mcp/
+*.db
+*.db-shm
+*.db-wal
+node_modules/
+.env
+.env.*
+!.env.example

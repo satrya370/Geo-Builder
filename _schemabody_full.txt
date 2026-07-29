@@ -1,0 +1,39 @@
+const draft = $('Code: Parse Draft').first().json.draft || '';
+const ctx = $('Code: Build Run Context').first().json;
+const outline = $('Code: Parse Outline').first().json;
+const targetKeyword = outline?.resolvedTargetKeyword || ctx?.targetKeyword || '';
+const cc = ctx?.contentContext || {};
+const cats = cc.wordpress?.categories || [];
+const tags = cc.wordpress?.tags || [];
+const author = cc.author || {};
+const today = new Date().toISOString().split('T')[0];
+
+const catsText = cats.map(c => `${c.name} (id:${c.id})`).join(', ');
+const tagsText = tags.map(t => t.name).join(', ');
+
+const prompt = `Ekstrak metadata dari artikel berikut. Kamu hanya mengekstrak — jangan mengarang informasi yang tidak ada di artikel.
+
+ARTIKEL:
+${draft}
+
+TARGET KEYWORD: ${targetKeyword}
+KATEGORI TERSEDIA: ${catsText}
+TAG TERSEDIA: ${tagsText}
+AUTHOR: ${JSON.stringify(author)}
+TANGGAL: ${today}
+
+ATURAN:
+- title: maks 60 karakter, mengandung target keyword.
+- metaDescription: WAJIB 120–160 karakter. Hitung dengan teliti.
+- slug: huruf kecil, dipisah tanda hubung, maks 6 kata.
+- categories/tags: PILIH dari daftar yang tersedia. JANGAN membuat baru.
+- faqSchema: ambil dari section FAQ artikel, minimal 3 pasang Q&A.
+
+Balas HANYA JSON:
+{
+  "title": "...", "metaDescription": "...", "slug": "...",
+  "categories": ["..."], "tags": ["..."], "excerpt": "<1–2 kalimat>",
+  "faqSchema": [{"question": "...", "answer": "..."}]
+}`;
+
+return [{ json: { _schemaBody: { model: 'qwen2.5:7b-instruct-q4_K_M', messages: [{ role: 'system', content: 'Anda metadata extractor. Balas HANYA JSON valid.' }, { role: 'user', content: prompt }], format: 'json', stream: false, options: { temperature: 0.2, num_ctx: 8192 } } } }];

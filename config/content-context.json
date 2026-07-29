@@ -1,0 +1,119 @@
+{
+  "_comment": "Read by node 6 (Code: Load Content Context). Replace <...> placeholders with your actual site data. Categories & tags MUST be copied from your existing WordPress site (GET /wp-json/wp/v2/categories?per_page=100) so the AI selects from available ones, not inventing new categories.",
+
+  "site": {
+    "name": "satryapudja.wordpress.com",
+    "url": "https://satryapudja.wordpress.com",
+    "language": "id",
+    "niche": "Philosophy (classical & modern, including philosophy of science — naturalism, evolution, philosophy of creation) and niche psychological opinion/perspective (specific psychological phenomena, including tips for conditions like ADHD/anxiety) — NOT general self-help/self-improvement, NOT clinical information presentation",
+    "audience": "Curious, reflective readers — interested in deep philosophical perspectives and well-reasoned opinions on psychological phenomena, not seekers of generic self-help advice or clinical diagnoses",
+    "contentStyle": "Mostly OPINION/PERSPECTIVE (deep-dive argumentative), not neutral encyclopedic reporting — see tone.stance below and GEO_SCORING_RUBRIC.md §5a (adjusted in CP 002)"
+  },
+
+  "tone": {
+    "voice": "reflective, argumentative but measured — deep-dive, not shallow listicle",
+    "person": "second person (you) — not formal 'Anda', not circular 'we'",
+    "stance": "Taking an explicit stance/opinion is allowed and ENCOURAGED — BUT every stance MUST reference a specific thinker/theory/study (philosopher name, psychological theory name, study name), not thrown out without basis. See GEO_SCORING_RUBRIC.md §5a.",
+    "avoid": [
+      "hype/clickbait language (EVERYONE was WRONG, revolutionary, you MUST know this)",
+      "filler opening sentences (in this digital era, as time progresses)",
+      "vague attribution (many experts, according to research) — ALWAYS name the specific philosopher/theory/study",
+      "generic self-help/self-improvement style (5 ways to be better, generic productivity tips)",
+      "medical/clinical article style (diagnosis, treatment protocols) — this is not the niche, and the Safety Guard will reject topics requesting such personal advice",
+      "emoji within article body"
+    ],
+    "prefer": [
+      "explicit references to philosopher names/theories/schools of thought or specific psychological studies",
+      "comparison of perspectives (e.g., two philosophers with opposing views on the same issue)",
+      "mention trade-offs/limitations of arguments, not just one side",
+      "concise sentences that stand alone meaningfully when quoted individually"
+    ]
+  },
+
+  "author": {
+    "_comment": "Used for WordPress byline + JSON-LD author (E-E-A-T signal). Framing: independent writer/researcher synthesizing research & thought — NOT claiming to be a licensed clinical psychologist or formal philosophy academic, unless actually true. False credential claims risk damaging site credibility if checked by readers.",
+    "name": "Satrya Pudja",
+    "jobTitle": "Independent writer & researcher — philosophy and psychology",
+    "url": "https://satryapudja.wordpress.com/about",
+    "bio": "An independent writer critically exploring perspectives on meaning, existence, and the human condition through philosophy and psychology. Also shares a firsthand account of living with and recovering from ADHD and anxiety — informed by personal experience in therapy and a sustained self-study of the psychological frameworks behind these conditions.",
+    "credentials": [],
+    "sameAs": [
+      "https://github.com/satryapudja",
+      "https://linkedin.com/in/satryapudja"
+    ],
+    "wpAuthorId": 1
+  },
+
+  "wordpress": {
+    "_comment": "WordPress.com site (CP 001) — NOT self-hosted. Auth via OAuth2 generic credential in n8n (Authentication: Body), not Application Password/Basic Auth. categories & tags MUST be numeric IDs from your WP; fetch via GET {restApiBase}/categories and {restApiBase}/tags, don't let the AI make up new category names.",
+    "site": "satryapudja.wordpress.com",
+    "restApiBase": "https://public-api.wordpress.com/rest/v1.1/sites/satryapudja.wordpress.com",
+    "authMethod": "oauth2-generic-body",
+    "defaultStatus": "publish",
+    "defaultCategoryId": 1,
+    "_categoriesNote": "IDs fetched via GET {restApiBase}/categories (CP 002 step 2). Created automatically via n8n helper workflow.",
+    "categories": [
+      { "id": 790703683, "name": "Classical & Modern Philosophy", "useWhen": "Deep-dive into philosopher perspectives (classical or modern) on a question/phenomenon — not biographical summaries, but argument analysis" },
+      { "id": 62245, "name": "Philosophy of Science", "useWhen": "Philosophical issues in science: naturalism, evolution, philosophy of creation, limits of scientific method — still framed as philosophy, not popular science articles" },
+      { "id": 790703690, "name": "Psychological Opinion & Perspective", "useWhen": "Niche opinions/tips on specific psychological phenomena or conditions (e.g., ADHD, anxiety) from a personal/reflective standpoint — NOT general self-help, NOT clinical information articles" }
+    ],
+    "tags": [
+      { "id": null, "name": "philosophy" },
+      { "id": null, "name": "psychology" },
+      { "id": null, "name": "existentialism" },
+      { "id": null, "name": "ADHD" },
+      { "id": null, "name": "anxiety" },
+      { "id": null, "name": "philosophy-of-science" }
+    ]
+  },
+
+  "medium": {
+    "_comment": "PERMANENTLY DROPPED (CP 001) — integration token unavailable. This block kept as decision archive; nodes 43-45 are not built.",
+    "enabled": false
+  },
+
+  "geo": {
+    "_comment": "Thresholds & targets read by scoring nodes. Recalibrate after ~10 first articles based on score_breakdown column in article_log sheet.",
+    "passThreshold": 80,
+    "reviseThreshold": 60,
+    "maxReviseLoop": 2,
+    "targetWordCount": 1500,
+    "keywordDensityRange": [0.005, 0.02],
+    "minSections": 5,
+    "maxSections": 7,
+    "minQuestionHeadingRatio": 0.6,
+    "minFaqPairs": 3,
+    "minFactsRequired": 5,
+    "minNumericFactsRequired": 3
+  },
+
+  "models": {
+    "_comment": "Model mapping per role (CP 013). Outline→Groq (free), Schema→Ollama (local 127.0.0.1), Guard→Z.ai. Sisanya paid via various providers. WAJIB pakai 127.0.0.1 untuk Ollama, BUKAN localhost — di Windows ini 'localhost' resolve ke ::1 (IPv6) duluan dan Ollama cuma listen IPv4, menyebabkan ECONNREFUSED.",
+    "local": {
+      "endpoint": "http://127.0.0.1:11434/api/chat",
+      "model": "qwen2.5:7b-instruct-q4_K_M",
+      "options": { "temperature": 0.3, "num_ctx": 8192 }
+    },
+    "roles": {
+      "safetyGuard": { "tier": "paid", "temperature": 0.1, "provider": "Z.ai", "model": "glm-4.5-flash" },
+      "researcher": { "tier": "paid", "requiresWebSearch": true, "temperature": 0.3, "provider": "OpenRouter", "model": "tencent/hy3-preview:online" },
+      "outline": { "tier": "free", "temperature": 0.4, "provider": "Groq", "model": "llama-3.3-70b-versatile" },
+      "writer": { "tier": "paid", "temperature": 0.65, "provider": "KobiLLM", "model": "openai/gpt-5.4-nano" },
+      "critic": { "tier": "paid", "temperature": 0.2, "provider": "OpenRouter", "model": "openai/gpt-oss-120b" },
+      "reviser": { "tier": "paid", "temperature": 0.5, "provider": "OpenCode Zen", "model": "deepseek-v4-flash-free" },
+      "schema": { "tier": "local", "temperature": 0.2, "provider": "Ollama", "model": "qwen2.5:7b-instruct-q4_K_M" }
+    }
+  },
+
+  "sheets": {
+    "_comment": "Spreadsheet ID for topic queue & article log. See IMPLEMENTATION_PLAN.md §4 for column list.",
+    "spreadsheetId": "1TuezG43j45nXBrL-KRq_n-srMZyw_832YBvszmLveuo",
+    "topicQueueSheet": "topic_queue",
+    "articleLogSheet": "article_log"
+  },
+
+  "telegram": {
+    "_comment": "Only for result notifications + error alerts. No approval gate (Wait node) in this workflow.",
+    "chatId": "8675308460"
+  }
+}

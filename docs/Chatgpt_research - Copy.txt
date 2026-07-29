@@ -1,0 +1,779 @@
+Kesimpulan utama
+
+Arah Concept Brief + grounding ringan sudah tepat, tetapi ada satu perubahan besar yang saya sarankan:
+
+Jangan jadikan needsResearch: true/false sebagai keputusan tunggal di tingkat topik. Ubah menjadi verifikasi selektif di tingkat klaim dengan aturan deterministik.
+
+Arsitektur terbaik untuk kasus Anda bukan:
+
+Topik → AI memutuskan perlu riset atau tidak → Writer
+
+melainkan:
+
+Concept Map
+→ Atomic Claim Ledger
+→ Claim Classification
+→ Evidence Policy
+→ Selective Retrieval
+→ Evidence-bound Writing
+→ Post-draft Claim Audit
+
+Pendekatan ini dapat disebut claim-adaptive retrieval, evidence-gated generation, atau selective grounding pipeline. Secara akademik, ia menggabungkan beberapa keluarga pendekatan yang sudah dikenal:
+
+adaptive/selective retrieval;
+claim detection dan check-worthiness;
+atomic fact decomposition;
+argument mining;
+evidence retrieval dan claim verification;
+post-hoc attribution/revision.
+
+Self-RAG, FLARE, Adaptive-RAG, dan Probing-RAG sama-sama berusaha menghindari retrieval pada setiap permintaan, tetapi mekanisme pemicunya berbeda: keputusan model, confidence, kompleksitas pertanyaan, atau representasi internal.
+
+1. Evaluasi CP015: Concept Brief Architecture
+Pemisahan “conceptual vs empirical” benar, tetapi terlalu kasar
+
+Pemisahan Anda berguna sebagai editorial distinction, tetapi belum cukup aman sebagai verification policy.
+
+Masalahnya, sebuah pernyataan dapat bersifat konseptual sekaligus faktual:
+
+“Akrasia adalah kelemahan kehendak” → definisi konseptual, tetapi masih perlu konsistensi terminologis.
+“Aristoteles menolak kemungkinan seseorang mengetahui yang baik tetapi melakukan yang buruk” → atribusi faktual terhadap tokoh.
+“Aristoteles membahasnya dalam Nicomachean Ethics Buku VII” → klaim bibliografis dan tekstual.
+“Aristoteles berkata, ‘…’” → klaim kutipan verbatim, berisiko sangat tinggi.
+“Temporal Motivation Theory menggabungkan expectancy, value, impulsiveness, dan delay” → klaim mengenai struktur teori.
+“TMT terbukti memprediksi prokrastinasi pada populasi tertentu” → klaim empiris.
+
+Karena itu, saya menyarankan mengganti klasifikasi biner menjadi:
+
+Jenis klaim	Contoh	Kebijakan
+Interpretive thesis	“Akrasia menunjukkan konflik antara identitas dan tindakan”	Tidak wajib retrieval
+Normative argument	“Kita seharusnya tidak memahami prokrastinasi sebagai kemalasan”	Tidak wajib retrieval, tetapi premis faktualnya harus aman
+Canonical attribution	“Aristoteles berpendapat bahwa…”	Wajib grounding
+Terminological claim	“Istilah X pertama kali digunakan untuk…”	Biasanya wajib grounding
+Bibliographic/entity claim	Judul karya, tahun, tokoh, penulis	Lookup terstruktur
+Direct quotation	Kutipan verbatim	Wajib exact-source verification
+Empirical claim	Hasil studi, prevalensi, korelasi, efektivitas	Scholarly retrieval
+Quantitative claim	Angka, persentase, ukuran efek	Scholarly retrieval
+Common background	Informasi umum berisiko rendah	Opsional, tergantung centrality
+
+Istilah yang paling dekat di literatur adalah claim detection, check-worthiness detection, dan atomic claim decomposition. Pipeline fact-checking umumnya memisahkan deteksi klaim yang dapat diverifikasi, pencarian bukti, kemudian klasifikasi support/refute/not-enough-information.
+
+Untuk artikel filsafat, tambahkan argument mining: sistem tidak hanya mencari “fakta”, tetapi mengidentifikasi tesis, premis, objection, rebuttal, dan hubungan antarargumen. Ini membantu membedakan bagian yang merupakan interpretasi penulis dari premis faktual yang menjadi fondasinya.
+
+Model tidak boleh sendirian menentukan kebutuhan riset
+
+Concept Brief boleh mengeluarkan:
+
+{
+  "needsResearch": true,
+  "empiricalClaims": []
+}
+
+tetapi hasil tersebut sebaiknya hanya dianggap proposal, bukan keputusan final.
+
+Model dapat:
+
+lupa menandai klaim yang sebenarnya berisiko;
+merasa yakin terhadap atribusi yang salah;
+tidak menyadari bahwa judul karya yang dibuatnya tidak ada;
+gagal mendeteksi kutipan palsu yang ia ciptakan sendiri.
+
+Riset adaptive retrieval juga menunjukkan bahwa confidence internal model tidak selalu terkalibrasi dengan baik. Model dapat memberi confidence tinggi pada jawaban yang salah, sehingga retrieval berdasarkan self-confidence saja bukan mekanisme yang cukup aman.
+
+Desain yang lebih robust:
+
+Concept Brief menghasilkan peta konsep.
+Model kedua melakukan claim extraction dan claim typing.
+Rule engine deterministik menentukan apa yang wajib diverifikasi.
+Retrieval dilakukan hanya untuk klaim yang masuk kebijakan tersebut.
+
+Untuk klasifikasi klaim, model kecil atau classifier khusus bahkan dapat lebih stabil daripada zero-shot LLM besar. Riset check-worthiness multilingual terbaru menemukan bahwa model transformer yang dilatih khusus dapat mengungguli zero-shot LLM dalam klasifikasi klaim dan generalisasi lintas domain.
+
+Jadi keputusan retrieval idealnya:
+
+Model suggestion
++ deterministic lexical/entity rules
++ independent claim classifier
++ risk policy
+
+bukan hanya:
+
+Model self-declaration
+2. Bentuk arsitektur CP015 yang saya rekomendasikan
+A. Concept Cartographer
+
+Pengganti Researcher awal.
+
+Tugasnya:
+
+memetakan konsep;
+menyebut pemikir dan posisi yang relevan;
+mengidentifikasi perdebatan;
+menyusun beberapa kemungkinan thesis;
+mengidentifikasi counterargument;
+tidak mencari web;
+tidak boleh menghasilkan kutipan verbatim;
+tidak boleh memastikan judul, tahun, studi, DSM, atau istilah teknis spesifik tanpa menandainya sebagai kandidat belum terverifikasi.
+
+Output contoh:
+
+{
+  "coreQuestion": "Mengapa seseorang bertindak melawan penilaiannya sendiri?",
+  "concepts": [
+    {
+      "name": "akrasia",
+      "provisionalDefinition": "...",
+      "verificationNeeded": true
+    }
+  ],
+  "thinkerPositions": [
+    {
+      "thinker": "Aristotle",
+      "positionSummary": "...",
+      "status": "candidate_attribution"
+    }
+  ],
+  "possibleTheses": [],
+  "counterArguments": [],
+  "prohibitedUnverifiedDetails": [
+    "direct_quotes",
+    "exact_work_titles",
+    "publication_years",
+    "study_names"
+  ]
+}
+B. Claim Compiler
+
+Node kedua mengubah Concept Brief menjadi atomic claim ledger.
+
+Satu klaim harus mengandung satu proposisi utama. Pola ini mirip FActScore dan SAFE, yang mengevaluasi long-form generation dengan memecah teks menjadi atomic facts sebelum mencari dukungan.
+
+Schema yang saya sarankan:
+
+{
+  "claimId": "claim_017",
+  "claim": "Aristotle discusses akrasia in Book VII of the Nicomachean Ethics.",
+  "kind": "canonical_attribution",
+  "risk": "high",
+  "centrality": "core",
+  "verificationPolicy": "passage_and_bibliographic",
+  "queries": {
+    "en": [
+      "Aristotle akrasia Nicomachean Ethics Book VII"
+    ],
+    "id": []
+  },
+  "preferredSourceTypes": [
+    "primary_text",
+    "academic_reference"
+  ],
+  "status": "pending",
+  "allowedRealization": [
+    "paraphrase"
+  ]
+}
+
+Untuk pencarian, artikel boleh tetap ditulis dalam Bahasa Indonesia, tetapi searchQuery sebaiknya dibuat dalam Bahasa Inggris atau bahasa asli istilahnya.
+
+Model Tencent yang Anda uji mungkin mendapat hasil lebih baik karena perbedaan search backend, query rewriting, reranker, source prior, atau mekanisme terjemahan query—bukan semata-mata karena pengetahuan modelnya lebih baik. Ini merupakan inferensi, sehingga saya tidak akan menjadikan satu model tersebut sebagai fondasi arsitektur sebelum backend pencariannya diketahui.
+
+C. Deterministic Evidence Policy
+
+Gunakan Code node atau Switch node n8n.
+
+Contoh aturan:
+
+function determinePolicy(claim) {
+  const text = claim.claim.toLowerCase();
+
+  if (claim.kind === "direct_quote") {
+    return {
+      mustRetrieve: true,
+      method: "exact_quote",
+      failureAction: "reject"
+    };
+  }
+
+  if (claim.kind === "empirical" || claim.kind === "quantitative") {
+    return {
+      mustRetrieve: true,
+      method: "scholarly_evidence",
+      failureAction: "omit_or_hedge"
+    };
+  }
+
+  if (
+    claim.kind === "canonical_attribution" ||
+    claim.kind === "bibliographic" ||
+    claim.kind === "terminological"
+  ) {
+    return {
+      mustRetrieve: true,
+      method: "authoritative_lookup",
+      failureAction: "revise"
+    };
+  }
+
+  const riskyPatterns = [
+    /\b\d{4}\b/,
+    /\b\d+(\.\d+)?%/,
+    /\baccording to\b/,
+    /\bstudy\b/,
+    /\bresearchers?\b/,
+    /\bDSM[- ]?\d\b/i,
+    /["“”][^"“”]+["“”]/
+  ];
+
+  if (riskyPatterns.some(pattern => pattern.test(claim.claim))) {
+    return {
+      mustRetrieve: true,
+      method: "risk_trigger",
+      failureAction: "review"
+    };
+  }
+
+  return {
+    mustRetrieve: false,
+    method: "none",
+    failureAction: "none"
+  };
+}
+
+Dengan ini, jika Concept Brief lupa menandai kutipan, tahun, studi, atau DSM, rule engine masih dapat menangkapnya.
+
+3. GEO untuk konten evergreen dan opini
+Jangan mengoptimalkan “banyak fakta”; optimalkan “sourceability”
+
+Paper awal GEO menunjukkan bahwa strategi seperti menambahkan kutipan, statistik, sumber, dan struktur dapat meningkatkan visibilitas dalam benchmark generative engines hingga sekitar 40% pada kondisi tertentu. Namun efeknya berbeda antar-domain dan benchmark tersebut tidak membuktikan bahwa setiap taktik secara konsisten meningkatkan discoverability organik di sistem AI nyata.
+
+Survei kritis GEO yang lebih baru juga menekankan keterbatasan bukti: banyak studi menguji apakah sebuah sumber dipilih ketika sudah masuk ke konteks kandidat, bukan apakah halaman tersebut benar-benar ditemukan, dirayapi, dan dipilih secara organik dalam jangka panjang.
+
+Jadi untuk niche Anda, saya tidak menyarankan artikel dipenuhi:
+
+angka yang tidak diperlukan;
+kutipan paksa;
+daftar studi sekadar agar terlihat akademik;
+definisi generik yang sama seperti ratusan artikel lain.
+
+Google sendiri membedakan penggunaan AI untuk membantu riset dan struktur dari produksi konten skala besar tanpa added value. Panduannya menekankan people-first content dan konten yang menawarkan pengalaman, analisis, atau nilai di luar rangkuman komoditas.
+
+Formula yang lebih sesuai:
+
+Original argumentative synthesis
++ clearly attributable factual premises
++ machine-readable structure
++ precise terminology
++ limited but strong citations
++ explicit distinctions and counterarguments
+
+Untuk artikel filsafat/psikologi, sumber keunggulan seharusnya:
+
+framing masalah yang khas;
+penggabungan dua perspektif yang biasanya terpisah;
+thought experiment;
+counterargument yang serius;
+implikasi praktis;
+batasan interpretasi;
+proposisi yang jelas dan mudah dikutip mesin.
+
+Bukan jumlah fakta mentah.
+
+Struktur yang GEO-friendly tetapi tetap bernilai:
+
+Pertanyaan inti
+→ Jawaban singkat/thesis
+→ Definisi konsep
+→ Posisi tokoh atau teori
+→ Analisis penulis
+→ Objection
+→ Response
+→ Implikasi psikologis/praktis
+→ Kesimpulan
+
+Bing juga mulai menyediakan pelaporan citation visibility di AI answers dan merekomendasikan struktur yang jelas, heading informatif, bukti yang dapat dilacak, serta akurasi isi.
+
+4. Evaluasi CP016: apakah full RAG berlebihan?
+Jawaban jujurnya: full RAG umum berlebihan, tetapi selective RAG tidak
+
+Apabila yang dimaksud full RAG adalah:
+
+Crawl ribuan dokumen
+→ chunk semuanya
+→ embedding
+→ vector database
+→ retrieve top-k untuk setiap artikel
+
+maka untuk tahap awal, itu kemungkinan berlebihan karena:
+
+topik Anda sangat luas;
+korpus filsafat dan psikologi sulit dikurasi secara merata;
+kualitas retrieval sangat tergantung chunking dan metadata;
+sumber berlisensi atau edisi terjemahan menimbulkan masalah;
+vector similarity tidak menjamin passage benar-benar mendukung klaim;
+biaya maintenance bisa lebih besar daripada penghematan latency.
+
+Tetapi secara konseptual, grounding lookup yang Anda rancang tetap merupakan bentuk RAG: Anda mengambil external evidence lalu menggunakannya untuk generation atau verification.
+
+Pilihan terbaik adalah federated selective RAG:
+
+Claim type
+→ route ke API/corpus yang sesuai
+→ ambil evidence passage kecil
+→ verify
+→ hanya kirim evidence relevan ke Writer
+
+Bukan satu vector database universal.
+
+Kapan micro-RAG layak ditambahkan?
+
+Vector database kecil mulai berguna jika:
+
+topik yang sama berulang;
+sumber kanonik yang sama terus dipanggil;
+Anda membutuhkan passage-level retrieval;
+Anda ingin versi sumber dan provenance yang konsisten;
+API eksternal sering lambat atau rate-limited;
+corpus-nya legal untuk disimpan dan diindeks.
+
+Contohnya:
+
+Micro-RAG Philosophy
+- public-domain primary texts
+- Open Greek and Latin
+- selected canonical reference passages
+- your own licensed notes
+
+Micro-RAG Psychology
+- open-access review papers
+- theory-defining papers
+- selected meta-analyses
+- authoritative diagnostic/public-health documents
+
+Gunakan hybrid retrieval, bukan vector-only:
+
+BM25/full-text search untuk kutipan, nama, dan istilah eksak;
+entity/title lookup untuk karya dan penulis;
+vector retrieval untuk konsep semantik;
+reranker untuk memilih passage;
+verifier untuk memastikan entailment.
+
+Naive RAG sendiri belum cukup menjamin factuality. Benchmark CRAG menunjukkan bahwa bahkan sistem RAG tetap menghasilkan klaim yang tidak terdukung jika retrieval, generation, dan evaluasi bukti tidak dirancang secara eksplisit.
+
+5. Verifikasi kutipan: tidak dapat diselesaikan oleh verifier LLM saja
+
+Ini bagian paling penting.
+
+Metadata lookup bukan quote verification
+
+Wikidata atau Open Library dapat membuktikan:
+
+tokoh ada;
+buku ada;
+siapa penulisnya;
+edisi atau tahun tertentu mungkin ada.
+
+Namun tidak membuktikan kalimat tertentu benar-benar muncul di dalam buku tersebut.
+
+Pipeline kutipan harus:
+
+1. Identify canonical work
+2. Identify edition/translation
+3. Retrieve searchable full text or preview
+4. Normalize punctuation/OCR/hyphenation
+5. Exact or fuzzy phrase match
+6. Capture locator
+7. Verify surrounding context
+8. Allow quote only after match
+
+Untuk filsafat kuno, terjemahan berbeda dapat menghasilkan kalimat yang sangat berbeda. Oleh karena itu locator seperti book/chapter/section atau Bekker number sering lebih stabil daripada nomor halaman saja.
+
+Kebijakan paling aman:
+
+Direct quotation is forbidden by default.
+
+Quote may be used only when:
+- exact passage was retrieved;
+- edition/translation is identified;
+- locator is available;
+- surrounding context supports the intended meaning.
+
+Jika tidak ditemukan:
+
+ubah menjadi paraphrase
++ jangan gunakan tanda kutip
++ jangan menampilkan seolah-olah kata persis tokoh
+
+Contoh:
+
+❌ Berisiko:
+
+Aristoteles berkata, “Manusia mengetahui yang baik, tetapi ditaklukkan hasratnya.”
+
+✅ Lebih aman:
+
+Secara garis besar, pembahasan Aristoteles tentang akrasia menelaah bagaimana pengetahuan praktis seseorang dapat gagal mengarahkan tindakannya.
+
+Sumber untuk verifikasi kutipan
+Google Books mendukung pencarian volume dan exact phrase, tetapi akses preview/full text bergantung hak cipta dan edisi.
+Open Library menyediakan metadata serta Search Inside untuk sebagian koleksi, tetapi rate limit dan cakupan teks harus diperhatikan.
+Perseus CTS dapat mengambil passage tertentu dari banyak teks Yunani-Romawi berdasarkan struktur teks.
+Open Greek and Latin menyediakan teks klasik terbuka dalam ekosistem CTS.
+
+Tidak ada satu API universal yang dapat memastikan semua kutipan filsafat modern benar, terutama dari karya berhak cipta dan berbagai terjemahan.
+
+6. Verifikasi atribusi
+
+Pertanyaan yang harus diuji bukan hanya:
+
+“Apakah sumber ini membahas Aristoteles?”
+
+tetapi:
+
+“Apakah passage yang ditemukan benar-benar mendukung klaim bahwa Aristoteles memegang posisi X?”
+
+Gunakan tiga verdict:
+
+SUPPORTED
+CONTRADICTED
+NOT_ENOUGH_INFORMATION
+
+Kemudian:
+
+Verdict	Tindakan
+Supported	Klaim boleh digunakan dengan sumber
+Contradicted	Hapus atau koreksi
+Not enough information	Cari sumber tambahan, hedge, atau hapus
+Disputed interpretation	Tulis sebagai “salah satu interpretasi”
+
+Untuk interpretasi yang diperdebatkan, jangan paksa verifier menghasilkan satu “kebenaran”. Lebih baik output:
+
+{
+  "status": "interpretively_contested",
+  "positions": [
+    {
+      "view": "...",
+      "supportingSources": []
+    },
+    {
+      "view": "...",
+      "supportingSources": []
+    }
+  ]
+}
+7. Tool dan API yang konkret
+Sumber identitas, karya, dan metadata
+Tool/API	Kegunaan	Kelebihan	Keterbatasan
+Wikidata API/SPARQL	Tokoh, karya, relasi, tanggal, identifier	Terstruktur, gratis, mudah dipanggil HTTP	Data dapat tidak lengkap; bukan bukti isi argumen
+Open Library	Buku, edition, author, ISBN, Search Inside	Cocok untuk existence check dan sebagian phrase search	Preview/cakupan tidak seragam; rate limit rendah untuk penggunaan anonim
+Google Books API	Volume, author, ISBN, exact phrase candidate	Coverage buku luas	Tidak selalu memberi full text; edisi dan terjemahan dapat ambigu
+Crossref	DOI dan metadata publikasi	Gratis untuk lookup metadata	Metadata bukan evidence passage
+Library of Congress API	Metadata dan koleksi digital	Tanpa API key untuk banyak endpoint	Coverage bergantung koleksi; bukan khusus filsafat
+DataCite	DOI untuk dataset, preprint, dan objek riset	Melengkapi Crossref	Tidak memverifikasi isi klaim
+Psikologi dan penelitian empiris
+Tool/API	Kegunaan	Kelebihan	Keterbatasan
+PubMed E-utilities	Pencarian artikel biomedis/psikologi klinis	Sumber resmi dan metadata kuat	Tidak mencakup seluruh psikologi sosial/organisasi
+Europe PMC REST	Metadata dan OA full text	Lebih mudah mendapat passage dari artikel terbuka	Full text hanya tersedia untuk subset tertentu
+Semantic Scholar Graph API	Paper, author, abstract, citations	Discovery dan citation graph yang baik	Abstract tidak selalu cukup untuk memverifikasi klaim detail
+OpenAlex	Scholarly graph lintas-disiplin	Cocok untuk psikologi nonklinis dan filsafat	Metadata/citation graph, bukan otomatis full-text evidence
+Unpaywall	Mencari versi OA berdasarkan DOI	Legal OA resolver, kuota besar	Tidak semua paper memiliki versi OA
+CORE API	Metadata dan OA full text	Dapat melengkapi Unpaywall	Kualitas parsing dan coverage bervariasi
+OSF/PsyArXiv	Preprint psikologi	Berguna untuk perkembangan teori baru	Belum tentu peer-reviewed
+OpenCitations	Citation graph	Triangulasi dan bibliometric context	Jumlah sitasi bukan bukti bahwa klaim benar
+Filsafat
+Sumber	Kegunaan	Catatan
+Stanford Encyclopedia of Philosophy	Canonical concept grounding dan scholarly overview	Sangat kuat untuk orientasi konsep, tetapi tidak ada public API resmi yang ideal untuk automation; lakukan fetch/cache secara hati-hati dan patuhi ketentuan situs
+PhilPapers OAI-PMH	Discovery metadata dan OA philosophy papers	OAI hanya mengekspos bagian yang diizinkan/open-access, bukan keseluruhan database
+Perseus CTS	Passage primary text klasik	Sangat berguna untuk Yunani-Romawi; terjemahannya dapat lama atau terbatas
+Open Greek and Latin	Open classical texts	Baik untuk corpus lokal/micro-RAG
+Google Books/Open Library	Verifikasi buku dan candidate quote	Harus tetap mengunci edition/translation
+
+Saya tidak menyarankan menjadikan unofficial SEP scraper API sebagai dependency inti. Ia dapat berubah sewaktu-waktu dan membawa risiko reliabilitas maupun kepatuhan terhadap ketentuan situs.
+
+8. Model/library untuk hallucination verification
+
+Penting membedakan dua jenis verifier:
+
+Reference-grounded verifier
+Menjawab: “Apakah klaim didukung passage ini?”
+Open-world fact checker
+Menjawab: “Apakah klaim ini benar di dunia nyata?”
+
+Model-model ringan umumnya lebih kuat untuk nomor 1. Mereka tidak dapat mengetahui kebenaran tanpa evidence.
+
+Tool/model	Kegunaan	Trade-off
+MiniCheck	Menilai dukungan claim terhadap grounding document	Kecil, dapat self-host, cocok dijadikan HTTP microservice; tetap membutuhkan evidence yang benar
+AlignScore	Skor factual consistency/text alignment	Ringan dan umum; skor perlu dikalibrasi, tidak selalu memberi alasan yang mudah dibaca
+Vectara HHEM	Mendeteksi inconsistency terhadap facts/context	Praktis untuk RAG output; tidak membuktikan open-world truth
+Patronus Lynx	Evaluator hallucination pada RAG context	Lebih reasoning-heavy; kebutuhan compute lebih besar
+LLM verifier berbeda vendor/family	Menilai entailment dan menjelaskan masalah	Fleksibel, tetapi lebih mahal dan masih dapat mengalami correlated error
+SelfCheckGPT	Membandingkan beberapa sampling untuk mendeteksi inkonsistensi	Tidak membutuhkan source, tetapi gagal jika model konsisten mengulang kesalahan yang sama
+
+Rekomendasi praktis:
+
+Deterministic verification
+→ exact quote/entity/identifier checks
+
+MiniCheck or HHEM
+→ claim-to-evidence support
+
+LLM verifier
+→ disputed/complex attribution only
+
+Bukan menggunakan LLM mahal untuk semua klaim.
+
+9. Apakah verifier model lebih baik daripada lookup eksternal?
+
+Tidak. Keduanya menyelesaikan masalah yang berbeda.
+
+Lookup eksternal
+
+Memberikan:
+
+evidence;
+metadata;
+passage;
+DOI/PMID/ISBN/QID;
+source provenance.
+Verifier model
+
+Menilai:
+
+apakah evidence mendukung klaim;
+apakah klaim terlalu kuat;
+apakah sumber hanya berhubungan secara topikal;
+apakah ada contradiction;
+apakah evidence tidak cukup.
+
+Verifier tanpa lookup adalah seperti hakim tanpa barang bukti.
+
+Self-critique murni juga tidak cukup. Chain-of-Verification menunjukkan bahwa memisahkan draft, pembuatan pertanyaan verifikasi, jawaban independen, dan final response dapat mengurangi hallucination. Namun riset lain menunjukkan bahwa intrinsic self-correction tanpa external feedback dapat gagal atau bahkan menurunkan kualitas.
+
+Jadi urutan kekuatan kira-kira:
+
+Same-model self-critique
+< Different-model verifier without evidence
+< External evidence + verifier
+< External evidence + deterministic checks + verifier + post-draft audit
+10. Arsitektur alternatif yang lebih baik
+
+Saya menyarankan mengganti Researcher dengan tiga subsistem.
+
+Form Input
+↓
+Safety Guard
+↓
+Concept Cartographer — closed book
+↓
+Argument & Claim Compiler
+↓
+Evidence Policy Engine
+↓
+┌──────────────────────────────────────────────┐
+│ Retrieval Router                             │
+│                                              │
+│ Entity/work → Wikidata/Open Library/Books    │
+│ Philosophy → SEP/PhilPapers/primary texts    │
+│ Psychology → PubMed/OpenAlex/Europe PMC      │
+│ Full text → Unpaywall/CORE                   │
+│ Quote → exact lexical passage search         │
+└──────────────────────────────────────────────┘
+↓
+Evidence Normalizer
+↓
+Claim Verifier
+↓
+Evidence-bound Outline Planner
+↓
+Writing Planner
+↓
+Writer
+↓
+Post-draft Atomic Claim Auditor
+↓
+Unsupported-claim Reviser
+↓
+Rule Checker
+↓
+Style/Argument Critic
+↓
+Gate
+↓
+Metadata
+↓
+WordPress Draft
+Perubahan penting dari pipeline lama
+1. Pisahkan factuality critic dari quality critic
+
+AI Critic Anda jangan sekaligus menilai:
+
+kedalaman;
+gaya;
+orisinalitas;
+factuality;
+citation correctness;
+argument coherence.
+
+Itu terlalu banyak objektif dalam satu prompt.
+
+Gunakan:
+
+Grounding Gate
+- factual support
+- attribution
+- quote validity
+- citation entailment
+
+Argument Critic
+- thesis strength
+- counterargument
+- internal logic
+- conceptual nuance
+
+Editorial Critic
+- readability
+- structure
+- tone
+- repetition
+- GEO/sourceability
+2. Writer hanya boleh menggunakan verified evidence objects
+
+Jangan memberi Writer seluruh search result mentah.
+
+Berikan:
+
+{
+  "claimId": "claim_017",
+  "verifiedClaim": "...",
+  "evidence": {
+    "sourceTitle": "...",
+    "sourceType": "primary_text",
+    "locator": "Book VII, section ...",
+    "excerpt": "...",
+    "verdict": "supported"
+  },
+  "allowedRealization": "paraphrase",
+  "citationRequired": true
+}
+3. Audit ulang setelah draft
+
+Writer dapat memperkenalkan nama studi, istilah, atau atribusi baru meskipun tidak ada dalam input.
+
+Karena itu:
+
+Final Draft
+→ extract all atomic claims again
+→ compare with approved Claim Ledger
+→ identify new claims
+→ verify only new/high-risk claims
+
+Pendekatan post-hoc seperti RARR secara eksplisit mencari attribution untuk keluaran model lalu merevisi bagian yang tidak didukung sambil mempertahankan sebanyak mungkin isi awal.
+
+FaStFACT juga relevan untuk tujuan efisiensi Anda karena menggunakan confidence dan selective search agar tidak setiap klaim diproses dengan pencarian mahal.
+
+11. Gate policy yang saya sarankan
+Kondisi	Hasil
+Direct quote tanpa exact match	REJECT
+Direct quote ditemukan tetapi edisi tidak jelas	REVISE menjadi paraphrase
+Named attribution berstatus NEI	REVISE/HEDGE
+Klaim empiris inti tanpa paper/evidence	REJECT atau RETRIEVE
+Angka tanpa source locator	REJECT
+Judul karya tidak cocok dengan bibliographic API	REVISE
+Draft memperkenalkan studi/nama baru	VERIFY
+Interpretasi original tanpa klaim faktual baru	PASS
+Interpretasi diperdebatkan tetapi ditulis sebagai fakta tunggal	REVISE
+Source hanya membahas topik tetapi tidak mendukung klaim	REJECT citation
+
+Citation quality perlu diperiksa pada level entailment, bukan sekadar keberadaan URL. Evaluasi ALCE menunjukkan bahwa sistem generatif dapat memberikan banyak citation tetapi hanya sebagian yang benar-benar lengkap mendukung semua klaimnya.
+
+12. Optimasi latency di n8n
+
+Bottleneck 100–275 detik kemungkinan dapat ditekan tanpa menghilangkan grounding:
+
+Search per high-risk claim, bukan 8–12 fakta umum.
+Jalankan lookup independen secara paralel dengan batas concurrency.
+
+Gunakan cache berdasarkan:
+
+normalizedClaim + evidenceType + sourceVersion
+
+Simpan persistent evidence registry:
+
+Aristotle + akrasia + NE Book VII
+Piers Steel + Temporal Motivation Theory
+DSM-5 terminology
+Prioritaskan API/domain allowlist sebelum general web search.
+Batch DOI/title lookups bila API mendukung.
+Gunakan English query expansion, artikel tetap berbahasa Indonesia.
+
+Terapkan timeout dan fallback:
+
+source API → scholarly search → bounded web search → omit/hedge
+Jangan mengulang retrieval untuk klaim yang sama pada Reviser.
+Hanya kirim excerpt yang relevan ke verifier dan Writer.
+
+Contoh source tier:
+
+{
+  "tier1": [
+    "primary_text",
+    "official_database",
+    "peer_reviewed_full_text",
+    "authoritative_encyclopedia"
+  ],
+  "tier2": [
+    "academic_metadata",
+    "university_page",
+    "scholarly_review"
+  ],
+  "tier3": [
+    "reputable_general_reference"
+  ],
+  "blocked": [
+    "seo_aggregator",
+    "unsourced_blog",
+    "content_farm"
+  ]
+}
+Putusan akhir
+CP015 — Concept Brief
+
+Secara arah: 8/10.
+
+Sudah jauh lebih sesuai daripada Researcher-first untuk konten evergreen. Namun jangan berhenti pada needsResearch tingkat artikel. Upgrade menjadi:
+
+Concept Brief
+→ Atomic Claim Ledger
+→ Claim-level retrieval policy
+CP016 — grounding ringan
+
+Jika hanya memakai Wikidata/Open Library untuk lookup metadata: sekitar 6/10.
+
+Itu akan mencegah beberapa nama atau judul palsu, tetapi tidak cukup untuk:
+
+verifikasi isi argumen;
+kutipan verbatim;
+attribution entailment;
+studi psikologi;
+interpretasi yang diperdebatkan.
+
+Jika grounding ringan Anda mencakup evidence passage + verifier + post-draft audit: sekitar 9/10 untuk use case ini.
+
+Rekomendasi final
+
+Jangan membangun full general-purpose vector RAG dahulu.
+
+Bangun:
+
+Claim-Adaptive Grounding Pipeline dengan federated retrieval, deterministic evidence policy, exact quote verification, evidence-bound writing, dan post-draft atomic claim audit.
+
+Setelah evidence registry Anda membesar dan sumber yang sama berulang, barulah sebagian cache tersebut dipromosikan menjadi curated micro-RAG.
+
+Ini memberi keseimbangan terbaik antara:
+
+latency;
+biaya;
+orisinalitas argumentatif;
+factuality;
+kualitas sumber;
+auditability;
+kemudahan implementasi di n8n.

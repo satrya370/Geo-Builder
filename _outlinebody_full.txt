@@ -1,0 +1,48 @@
+const ctx = $('Code: Build Run Context').first().json;
+const research = $input.first().json;
+const facts = research.facts || [];
+const commonQuestions = research.commonQuestions || [];
+const factsList = facts.map((f,i) => `${i+1}. ${f.claim} ${f.value ? '(' + f.value + ')' : ''} — ${f.sourceName}`).join('\n');
+const cb = d.conceptBrief || {};
+const angle = cb.angle || '';
+const sectionSeeds = Array.isArray(cb.sectionSeeds) ? cb.sectionSeeds.map(s => `- ${s.question} (${s.evidenceType})`).join('\n') : '';
+const questionsList = commonQuestions.join(', ');
+const prompt = `Kamu adalah content strategist. Susun outline artikel yang dioptimasi agar mudah dikutip oleh AI answer engine (ChatGPT, Perplexity, Google AI Overview).
+
+TOPIK: ${ctx.topic}
+DETAIL TOPIK: ${ctx.topicDetail || ''}
+TARGET KEYWORD (kosong = kamu tentukan sendiri dari topik): ${ctx.targetKeyword || ''}
+ENTITAS WAJIB DISEBUT (dari form): ${ctx.keyEntitiesSeed || ''}
+PERTANYAAN FAQ WAJIB (dari form): ${ctx.faqSeed || ''}
+TARGET PANJANG (kosong/Auto = pakai default): ${ctx.wordCountTarget || 'Auto'}
+FAKTA TERSEDIA: ${factsList}
+PERTANYAAN UMUM (auto dari riset): ${questionsList}
+ANGLE: ${angle}
+SECTION SEEDS (dari concept brief):
+${sectionSeeds}
+TONE: ${JSON.stringify(ctx.contentContext?.tone || {})}
+
+ATURAN OUTLINE:
+1. Buat 5-7 H2. MINIMAL 4 di antaranya berbentuk PERTANYAAN natural (apa / bagaimana / mengapa / berapa / kapan).
+2. Tulis heading seperti cara orang bertanya ke chatbot, bukan seperti judul bab.
+3. Tiap H2 harus menjawab SATU pertanyaan spesifik.
+4. Section terakhir WAJIB berjudul "FAQ" dengan minimal 3 sub-pertanyaan (H3).
+5. Tugaskan fakta ke section yang relevan lewat index-nya di FAKTA TERSEDIA.
+6. Kalau TARGET KEYWORD kosong: tentukan sendiri 1 keyword, isi ke resolvedTargetKeyword.
+7. ENTITAS WAJIB DISEBUT: gabungkan (union) ke daftar entitas dari riset.
+8. PERTANYAAN FAQ WAJIB: masukkan ke faq[] LEBIH DULU sebelum pertanyaan auto.
+9. Kalau TARGET PANJANG diisi angka: pakai angka itu sebagai totalTargetWords.
+
+Balas HANYA JSON:
+{
+  "workingTitle": "<judul, maks 65 karakter>",
+  "resolvedTargetKeyword": "<isi HANYA kalau TARGET KEYWORD kosong, kalau tidak null>",
+  "resolvedEntities": ["<union entitas form + riset>"],
+  "sections": [
+    {"heading": "<H2>", "answerFocus": "<pertanyaan tunggal>", "factIndexes": [0, 3], "targetWords": 200}
+  ],
+  "faq": [{"question": "<H3>", "shortAnswer": "<inti jawaban 1 kalimat>"}],
+  "totalTargetWords": 1500
+}`;
+
+return [{ json: { _outlineBody: { model: 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: 'Anda adalah content strategist. Balas HANYA JSON valid tanpa markdown.' }, { role: 'user', content: prompt }], temperature: 0.4, response_format: { type: 'json_object' } } } }];

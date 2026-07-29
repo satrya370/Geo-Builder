@@ -1,0 +1,15 @@
+Saya lampirkan draft artikel (title, meta description, dan isi lengkap dengan heading). Tolong buatkan ini menjadi satu dokumen Google Docs, dengan:
+
+1. Format dokumen:
+   - Judul artikel sebagai Heading 1
+   - Setiap subjudul (baris judul di antara paragraf) sebagai Heading 2
+   - Paragraf tetap seperti aslinya, JANGAN diringkas atau ditulis ulang isinya — hanya rapikan formatting
+   - Kutipan pull-quote (yang diapit tanda kutip, berdiri sendiri di antara paragraf) diformat sebagai blockquote/kutipan menonjol, bukan paragraf biasa
+   - Bagian FAQ di akhir tetap format tanya-jawab (pertanyaan sebagai Heading 3)
+
+2. Generate satu gambar untuk setiap Heading (1 gambar hero untuk judul utama + 1 gambar untuk masing-masing subjudul/H2), lalu sisipkan langsung ke dalam dokumen tepat di bawah heading-nya masing-masing, dengan syarat:
+   - Gaya visual KONSISTEN di semua gambar (pilih satu gaya — misalnya ilustrasi minimalis, palet warna muted/somber yang cocok dengan tema eksistensial-filosofis Viktor Frankl — dan pertahankan gaya itu di semua gambar, jangan berganti-ganti style)
+   - Rasio gambar 16:9, cocok untuk header artikel blog
+   - Konten gambar merepresentasikan ide utama section itu secara simbolis/metaforis (misalnya: kebebasan batin, tiga jalur makna — kerja/cinta/penderitaan, narasi mengubah penderitaan jadi harapan, dll) — BUKAN gambar literal orang di kamp konsentrasi (sensitif, hindari), tapi representasi abstrak/simbolis dari konsepnya
+
+3. Simpan/export hasil akhirnya sebagai file Google Docs (bukan cuma teks di chat) supaya saya tinggal buka dan edit langsung dari Google Drive saya.

@@ -1,0 +1,16 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Anda editor. Perbaiki HANYA bagian bermasalah."
+    },
+    {
+      "role": "user",
+      "content": "Perbaiki paragraf ini HANYA pada bagian yang bermasalah, jangan tulis ulang semuanya: \"Menunda pekerjaan itu buruk karena bikin stres.\" Perbaiki jadi lebih spesifik dan bersumber, output HANYA hasil perbaikan dalam markdown, tanpa penjelasan."
+    }
+  ],
+  "max_tokens": 2000,
+  "temperature": 0.5,
+  "reasoning_effort": "low"
+}

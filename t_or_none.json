@@ -1,0 +1,15 @@
+{
+  "model": "openai/gpt-oss-120b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Anda editor."
+    },
+    {
+      "role": "user",
+      "content": "Perbaiki paragraf ini HANYA pada bagian yang bermasalah: \"Menunda pekerjaan itu buruk karena bikin stres.\" Perbaiki jadi lebih spesifik, output HANYA hasil perbaikan."
+    }
+  ],
+  "max_tokens": 2000,
+  "temperature": 0.5
+}
